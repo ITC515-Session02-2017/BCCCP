@@ -51,8 +51,6 @@ public class SeasonTicket implements ISeasonTicket {
 	@Override
 	public boolean inUse() {
 
-	    // Check if the season ticket is already in use (check against the usage list)
-
 		Iterator<IUsageRecord> usageRec = usages.iterator();
 
 		boolean foundUsageRecord = false;
@@ -73,16 +71,11 @@ public class SeasonTicket implements ISeasonTicket {
 	@Override
 	public void recordUsage(IUsageRecord record) {
 
-	    // Add a usage record of this season ticket to the usage List (usages)
-		// This method accepts an existing record as argument.
-
         usages.add(record);
 	}
 
 	@Override
 	public IUsageRecord getCurrentUsageRecord() {
-
-	    // Find current usage record in the usages List and return the usage record
 
         Iterator<IUsageRecord> usageRecs = usages.iterator();
 
@@ -102,8 +95,6 @@ public class SeasonTicket implements ISeasonTicket {
 
 	    // Records the date and time of the end of this usage of the Season ticket.
 		// Will need to get the current usage record and write the dateTime to the usage record
-		// (found in the 'usages' list above)
-		// use the getSeasonTicketID() in the usageRecord
 
 		Iterator<IUsageRecord> usageRecs = usages.iterator();
 
@@ -118,8 +109,6 @@ public class SeasonTicket implements ISeasonTicket {
 
 	@Override
 	public List<IUsageRecord> getUsageRecords() {
-
-	    // Get the entire list of usage records and return as List
 
         return usages;
 	}
