@@ -19,18 +19,15 @@ public class UsageRecord implements IUsageRecord {
 
     }
 
-
     @Override
     public long getStartTime() {
         return startDateTime;
     }
 
-
     @Override
     public long getEndTime() {
         return endDateTime;
     }
-
 
     @Override
     public String getSeasonTicketId() {

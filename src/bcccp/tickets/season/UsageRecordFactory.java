@@ -6,6 +6,5 @@ public class UsageRecordFactory implements IUsageRecordFactory {
 	public IUsageRecord make(String ticketId, long startDateTime) {
 		return new UsageRecord(ticketId,startDateTime);
 	}
-
-
+	
 }
