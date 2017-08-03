@@ -1,23 +1,25 @@
 package bcccp.tickets.season;
 
 public class UsageRecord implements IUsageRecord {
+	
+	String ticketId;
+	long startDateTime;
+	long endDateTime;
+	
+	
+	
+	public UsageRecord(String ticketId, long startDateTime) {
+		this.ticketId = ticketId;
+    this.startDateTime = startDateTime;
+	}
 
-    String ticketId;
-    long startDateTime;
-    long endDateTime;
 
 
-    public UsageRecord(String ticketId, long startDateTime) {
-        this.ticketId = ticketId;
-        this.startDateTime = startDateTime;
-    }
-
-
-    @Override
-    public void finalise(long endDateTime) {
-        this.endDateTime = endDateTime;
-
-    }
+	@Override
+	public void finalise(long endDateTime) {
+		  this.endDateTime = endDateTime;
+		
+	}
 
     @Override
     public long getStartTime() {
@@ -35,4 +37,6 @@ public class UsageRecord implements IUsageRecord {
     }
 
 
+	
+	
 }
