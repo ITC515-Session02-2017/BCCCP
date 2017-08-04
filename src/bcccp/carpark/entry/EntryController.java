@@ -8,7 +8,10 @@ import bcccp.carpark.ICarparkObserver;
 import bcccp.carpark.IGate;
 import bcccp.tickets.adhoc.IAdhocTicket;
 
-public class EntryController implements ICarSensorResponder, ICarparkObserver, IEntryController {
+public class EntryController
+    implements ICarSensorResponder,
+    ICarparkObserver,
+    IEntryController {
 
   private IGate entryGate;
   private ICarSensor outsideSensor;
@@ -16,125 +19,59 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
   private IEntryUI ui;
 
   private ICarpark carpark;
-  private IAdhocTicket adhocTicket = null;
+  private IAdhocTicket  adhocTicket = null;
   private long entryTime;
   private String seasonTicketId = null;
 
 
-  public EntryController(Carpark carpark, IGate entryGate, ICarSensor os, ICarSensor is, IEntryUI ui) {
 
-    this.carpark = carpark;
-
-    this.entryGate = entryGate;
-
-    outsideSensor = os;
-
-    insideSensor = is;
-
-    this.ui = ui;
-
+  public EntryController(Carpark carpark, IGate entryGate,
+      ICarSensor os,
+      ICarSensor is,
+      IEntryUI ui) {
+    //TODO Implement constructor
   }
 
 
-  //adhoc
+
   @Override
   public void buttonPushed() {
-
-    adhocTicket = carpark.issueAdhocTicket();
-
-    carpark.recordAdhocTicketEntry();
-
+    // TODO Auto-generated method stub
 
   }
 
 
-  //seasonal
+
   @Override
   public void ticketInserted(String barcode) {
-
-    if (carpark.isSeasonTicketValid(barcode)){
-
-      carpark.recordSeasonTicketEntry(barcode);
-
-
-    }
-
-
+    // TODO Auto-generated method stub
 
   }
+
 
 
   @Override
   public void ticketTaken() {
-
-    entryGate.raise();
-
+    // TODO Auto-generated method stub
 
   }
 
-// The number of vehicles in the car park is incremented by 1 and a check is
-// made against the capacity of the car park.
+
+
   @Override
   public void notifyCarparkEvent() {
-
-    
+    // TODO Auto-generated method stub
 
   }
 
-/*
-A ‘Take
-Ticket’ display is flashed on the control pillar.  If the car park is full, no ticket is
-issued, and a ‘Full’ display is flashed on the control pillar.
- */
 
-/*
-
-When a car approaches an entry barrier, its presence is detected by a sensor
-under the road surface, and a ‘Press Button’ display is flashed on the control
-pillar.
- */
 
   @Override
   public void carEventDetected(String detectorId, boolean detected) {
+    // TODO Auto-generated method stub
+
+  }
 
 
-
-    if (detectorId.equals(outsideSensor.getId())) {
-
-      if(detected == true){
-
-        if (!carpark.isFull()) {
-
-          ui.display("Press Button");
-
-
-        }else {
-
-          ui.display("Full");
-        }
-
-
-      }
-
-    }
-
-
-    if (detectorId.equals(insideSensor.getId())) {
-
-      if (detected == true) {
-
-        if (entryGate.isRaised()){
-
-          entryGate.lower();
-
-        }
-
-
-      }
-
-    }
-
-
-}
 
 }
