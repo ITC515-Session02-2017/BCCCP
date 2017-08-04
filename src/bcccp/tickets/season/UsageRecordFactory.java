@@ -7,6 +7,5 @@ public class UsageRecordFactory implements IUsageRecordFactory {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-
+	
 }
