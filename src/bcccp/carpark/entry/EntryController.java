@@ -8,20 +8,18 @@ import bcccp.carpark.ICarparkObserver;
 import bcccp.carpark.IGate;
 import bcccp.tickets.adhoc.IAdhocTicket;
 
+
 public class EntryController implements ICarSensorResponder, ICarparkObserver, IEntryController {
 
   private IGate entryGate;
   private ICarSensor outsideSensor;
   private ICarSensor insideSensor;
   private IEntryUI ui;
-
   private ICarpark carpark;
-  private IAdhocTicket adhocTicket = null;
-  private long entryTime;
-  private String seasonTicketId = null;
 
 
-  public EntryController(Carpark carpark, IGate entryGate, ICarSensor os, ICarSensor is, IEntryUI ui) {
+  public EntryController(Carpark carpark, IGate entryGate, ICarSensor os, ICarSensor is,
+      IEntryUI ui) {
 
     this.carpark = carpark;
 
@@ -36,30 +34,34 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
   }
 
 
-  //adhoc
   @Override
   public void buttonPushed() {
 
-    adhocTicket = carpark.issueAdhocTicket();
+    IAdhocTicket adhocTicket = carpark.issueAdhocTicket();
 
-    carpark.recordAdhocTicketEntry();
+    ui.printTicket(carpark.getName(), adhocTicket.getTicketNo(), adhocTicket.getEntryDateTime(),
+        adhocTicket.getBarcode());
 
+    ui.display("Take Ticket");
 
   }
 
 
-  //seasonal
+
   @Override
   public void ticketInserted(String barcode) {
 
-    if (carpark.isSeasonTicketValid(barcode)){
+    if (carpark.isSeasonTicketValid(barcode)) {
 
       carpark.recordSeasonTicketEntry(barcode);
 
+      ui.discardTicket();   // eject valid ticket
+
+    } else {
+
+      ui.discardTicket();   // reject invalid ticket
 
     }
-
-
 
   }
 
@@ -69,72 +71,55 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
 
     entryGate.raise();
 
-
   }
 
-// The number of vehicles in the car park is incremented by 1 and a check is
-// made against the capacity of the car park.
+
   @Override
   public void notifyCarparkEvent() {
 
-    
+    if (carpark.isFull()) {
+      ui.display("Car Park Full");
+    }
 
   }
 
-/*
-A ‘Take
-Ticket’ display is flashed on the control pillar.  If the car park is full, no ticket is
-issued, and a ‘Full’ display is flashed on the control pillar.
- */
-
-/*
-
-When a car approaches an entry barrier, its presence is detected by a sensor
-under the road surface, and a ‘Press Button’ display is flashed on the control
-pillar.
- */
 
   @Override
   public void carEventDetected(String detectorId, boolean detected) {
 
-
-
     if (detectorId.equals(outsideSensor.getId())) {
 
-      if(detected == true){
+      if (detected) {
 
         if (!carpark.isFull()) {
 
           ui.display("Press Button");
 
-
-        }else {
+        } else {
 
           ui.display("Full");
         }
 
-
       }
 
     }
-
 
     if (detectorId.equals(insideSensor.getId())) {
 
-      if (detected == true) {
+      if (detected) {
 
-        if (entryGate.isRaised()){
+        if (entryGate.isRaised()) {
 
           entryGate.lower();
 
-        }
+          notifyCarparkEvent();
 
+        }
 
       }
 
     }
 
-
-}
+  }
 
 }
