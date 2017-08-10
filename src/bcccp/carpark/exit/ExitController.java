@@ -9,96 +9,90 @@ import bcccp.tickets.adhoc.IAdhocTicket;
 import java.util.Date;
 
 public class ExitController implements ICarSensorResponder, IExitController {
-	
-	private IGate exitGate;
-	private ICarSensor insideSensor;
-	private ICarSensor outsideSensor; 
-	private IExitUI ui;
-	
-	private ICarpark carpark;
-	private IAdhocTicket  adhocTicket = null;
-	private long exitTime;
-	private String seasonTicketId = null;
 
-	private final long FIFTEEN_MINUTES = 900000; //milliseconds
+  static final long FIFTEEN_MINUTES = 900000; //fifteen minutes = 900000 milliseconds
+  private IGate exitGate;
+  private ICarSensor insideSensor;
+  private ICarSensor outsideSensor;
+  private IExitUI ui;
+  private ICarpark carpark;
+  private IAdhocTicket adhocTicket = null;
+  private long exitTime;
+  private String seasonTicketId = null;
 
+  /**
+   * Description - a controller class for sensing the approach and departure of cars at the car park
+   * exit gate.
+   */
+  public ExitController(Carpark carpark, IGate exitGate, ICarSensor is, ICarSensor os, IExitUI ui) {
 
-	public ExitController(Carpark carpark, IGate exitGate, ICarSensor is, ICarSensor os, IExitUI ui) {
+    this.carpark = carpark;
 
-		this.carpark = carpark;
+    this.exitGate = exitGate;
 
-		this.exitGate = exitGate;
+    insideSensor = is;
 
-		insideSensor = is;
+    outsideSensor = os;
 
-		outsideSensor = os;
+    this.ui = ui;
+  }
 
-		this.ui = ui;
+  // STEP: Read barcode.
+  // The bar code is read and a check is made that no more than 15 minutes have elapsed.
+  @Override
+  public void ticketInserted(String ticketStr) {
 
-	}
+    exitTime = new Date().getTime();
 
+    adhocTicket = carpark.getAdhocTicket(ticketStr);
 
-	// STEP: Read barcode.
-// The bar code is read and a check is made that no more than 15 minutes have elapsed.
-	@Override
-	public void ticketInserted(String ticketStr) {
+    if (adhocTicket != null) {
 
-		exitTime = new Date().getTime();
+      if (exitTime < (adhocTicket.getPaidDateTime() + FIFTEEN_MINUTES)) {
+        ticketTaken();
+      }
 
-		adhocTicket = carpark.getAdhocTicket(ticketStr);
+      // otherwise:  an intercom in the control pillar is activated and connected to the attendant
+      // in the car park office.
 
-		if (adhocTicket != null) {
+      return;
+    }
 
-			if (exitTime < (adhocTicket.getPaidDateTime() + FIFTEEN_MINUTES)) {
-				ticketTaken();
-			}
-			// otherwise:  an intercom in the control pillar is activated and connected to the attendant in the car park office.
-			return;
+    if (carpark.isSeasonTicketValid(ticketStr)) {
+      ticketTaken();
+    }
 
-		}
+    // otherwise:  an intercom in the control pillar is activated and connected to the attendant
+    // in the car park office.
 
-		if (carpark.isSeasonTicketValid(ticketStr)) {
-			ticketTaken();
-		}
+  }
 
-		// otherwise:  an intercom in the control pillar is activated and connected to the attendant in the car park office.
+  @Override
+  public void ticketTaken() {
 
-	}
+    exitGate.raise();
+  }
 
-	@Override
-	public void ticketTaken() {
+  @Override
+  public void carEventDetected(String detectorId, boolean detected) {
 
-		exitGate.raise();
+    if (detectorId.equals(insideSensor.getId())) {
 
-	}
+      if (detected) {
 
-	@Override
-	public void carEventDetected(String detectorId, boolean detected) {
+        ui.display("Insert Ticket");
+      }
+    }
 
-		if (detectorId.equals(insideSensor.getId())) {
+    if (detectorId.equals(outsideSensor.getId())) {
 
-			if (detected) {
+      if (detected) {
 
-				ui.display("Insert Ticket");
+        if (exitGate.isRaised()) {
 
-			}
-
-		}
-
-		if (detectorId.equals(outsideSensor.getId())) {
-
-			if (detected) {
-
-				if (exitGate.isRaised()) {
-
-					exitGate.lower();
-
-				}
-
-			}
-
-		}
-
-	}
-	
+          exitGate.lower();
+        }
+      }
+    }
+  }
 }
