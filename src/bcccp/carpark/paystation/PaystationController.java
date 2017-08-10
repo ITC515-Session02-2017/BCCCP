@@ -12,6 +12,7 @@ public class PaystationController implements IPaystationController {
   private float charge;
 
   public PaystationController(ICarpark carpark, IPaystationUI ui) {
+
     ui.registerController(this);
     this.carpark = carpark;
     this.ui = ui;
@@ -20,6 +21,7 @@ public class PaystationController implements IPaystationController {
 
   @Override
   public void ticketInserted(String barcode) {
+
     if (carpark.getAdhocTicket(barcode).getEntryDateTime() == adhocTicket.getEntryDateTime()) {
       charge = carpark.calculateAddHocTicketCharge(adhocTicket.getEntryDateTime());
       ui.display("AU " + charge);
@@ -45,6 +47,7 @@ public class PaystationController implements IPaystationController {
 
   @Override
   public void ticketTaken() {
+
       ui.display("Idle");
       ui.deregisterController();
 

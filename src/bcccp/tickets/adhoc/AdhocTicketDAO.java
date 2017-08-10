@@ -49,6 +49,7 @@ public class AdhocTicketDAO  implements IAdhocTicketDAO  {
 			if (itr.next().getBarcode().equals(barcode)){
 
 				ticket = itr.next();
+
 			}
 		}
 
