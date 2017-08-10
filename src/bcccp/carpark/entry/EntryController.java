@@ -8,7 +8,6 @@ import bcccp.carpark.ICarparkObserver;
 import bcccp.carpark.IGate;
 import bcccp.tickets.adhoc.IAdhocTicket;
 
-
 public class EntryController implements ICarSensorResponder, ICarparkObserver, IEntryController {
 
   private IGate entryGate;
@@ -17,9 +16,19 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
   private IEntryUI ui;
   private ICarpark carpark;
 
-
-  public EntryController(Carpark carpark, IGate entryGate, ICarSensor os, ICarSensor is,
-      IEntryUI ui) {
+  /**
+   * Description - a controller class for sensing cars approaching and leaving the entry gate,
+   * raising and lowering the gate, and communicating information to the 'control pillar' and
+   * carpark.
+   *
+   * @param carpark short term or long term
+   * @param entryGate entry gate
+   * @param os sensor outside gate.
+   * @param is sensor inside gate
+   * @param ui control pillar user interface
+   */
+  public EntryController(
+      Carpark carpark, IGate entryGate, ICarSensor os, ICarSensor is, IEntryUI ui) {
 
     this.carpark = carpark;
 
@@ -30,23 +39,21 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
     insideSensor = is;
 
     this.ui = ui;
-
   }
-
 
   @Override
   public void buttonPushed() {
 
     IAdhocTicket adhocTicket = carpark.issueAdhocTicket();
 
-    ui.printTicket(carpark.getName(), adhocTicket.getTicketNo(), adhocTicket.getEntryDateTime(),
+    ui.printTicket(
+        carpark.getName(),
+        adhocTicket.getTicketNo(),
+        adhocTicket.getEntryDateTime(),
         adhocTicket.getBarcode());
 
     ui.display("Take Ticket");
-
   }
-
-
 
   @Override
   public void ticketInserted(String barcode) {
@@ -55,24 +62,19 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
 
       carpark.recordSeasonTicketEntry(barcode);
 
-      ui.discardTicket();   // eject valid ticket
+      ui.discardTicket(); // eject valid ticket
 
     } else {
 
-      ui.discardTicket();   // reject invalid ticket
-
+      ui.discardTicket(); // reject invalid ticket
     }
-
   }
-
 
   @Override
   public void ticketTaken() {
 
     entryGate.raise();
-
   }
-
 
   @Override
   public void notifyCarparkEvent() {
@@ -80,9 +82,7 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
     if (carpark.isFull()) {
       ui.display("Car Park Full");
     }
-
   }
-
 
   @Override
   public void carEventDetected(String detectorId, boolean detected) {
@@ -99,9 +99,7 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
 
           ui.display("Full");
         }
-
       }
-
     }
 
     if (detectorId.equals(insideSensor.getId())) {
@@ -113,13 +111,8 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
           entryGate.lower();
 
           notifyCarparkEvent();
-
         }
-
       }
-
     }
-
   }
-
 }
