@@ -12,24 +12,44 @@ public class PaystationController implements IPaystationController {
   private float charge;
 
   public PaystationController(ICarpark carpark, IPaystationUI ui) {
-    //TODO Implement constructor
+
+    ui.registerController(this);
+    this.carpark = carpark;
+    this.ui = ui;
+    ui.display("Idle");
   }
 
   @Override
   public void ticketInserted(String barcode) {
-    // TODO Auto-generated method stub
 
+    if (carpark.getAdhocTicket(barcode).getEntryDateTime() == adhocTicket.getEntryDateTime()) {
+      charge = carpark.calculateAddHocTicketCharge(adhocTicket.getEntryDateTime());
+      ui.display("AU " + charge);
+
+    } else {
+      ui.display("Go to the office");
+    }
   }
 
   @Override
   public void ticketPaid() {
-    // TODO Auto-generated method stub
 
+    adhocTicket.pay(adhocTicket.getExitDateTime(), charge);
+    carpark.recordAdhocTicketExit();
+    ui.printTicket(
+        carpark.getName(),
+        adhocTicket.getTicketNo(),
+        adhocTicket.getEntryDateTime(),
+        adhocTicket.getPaidDateTime(),
+        charge,
+        adhocTicket.getBarcode());
   }
 
   @Override
   public void ticketTaken() {
-    // TODO Auto-generated method stub
+
+      ui.display("Idle");
+      ui.deregisterController();
 
   }
 }
