@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Iterator;
 
-public class SeasonTicket implements ISeasonTicket {
+public final class SeasonTicket implements ISeasonTicket {
 	
 	private List<IUsageRecord> usages;
 	private IUsageRecord currentUsage = null;
