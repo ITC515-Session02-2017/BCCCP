@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Date;
 
 
-public class SeasonTicketDAO implements ISeasonTicketDAO {
+public final class SeasonTicketDAO implements ISeasonTicketDAO {
 
 	private List<ISeasonTicket> seasonTickets;
 	private IUsageRecordFactory factory;
