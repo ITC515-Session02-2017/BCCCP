@@ -8,70 +8,111 @@ import bcccp.carpark.ICarparkObserver;
 import bcccp.carpark.IGate;
 import bcccp.tickets.adhoc.IAdhocTicket;
 
-public class EntryController
-    implements ICarSensorResponder,
-    ICarparkObserver,
-    IEntryController {
+public class EntryController implements ICarSensorResponder, ICarparkObserver, IEntryController {
 
   private IGate entryGate;
   private ICarSensor outsideSensor;
   private ICarSensor insideSensor;
   private IEntryUI ui;
-
   private ICarpark carpark;
-  private IAdhocTicket  adhocTicket = null;
-  private long entryTime;
-  private String seasonTicketId = null;
 
+  /**
+   * Description - a controller class for sensing cars approaching and leaving the entry gate,
+   * raising and lowering the gate, and communicating information to the 'control pillar' and
+   * carpark.
+   *
+   * @param carpark   short term or long term
+   * @param entryGate entry gate
+   * @param os        sensor outside gate.
+   * @param is        sensor inside gate
+   * @param ui        control pillar user interface
+   */
+  public EntryController(
+          Carpark carpark, IGate entryGate, ICarSensor os, ICarSensor is, IEntryUI ui) {
 
+    this.carpark = carpark;
 
-  public EntryController(Carpark carpark, IGate entryGate,
-      ICarSensor os,
-      ICarSensor is,
-      IEntryUI ui) {
-    //TODO Implement constructor
+    this.entryGate = entryGate;
+
+    outsideSensor = os;
+
+    insideSensor = is;
+
+    this.ui = ui;
   }
-
-
 
   @Override
   public void buttonPushed() {
-    // TODO Auto-generated method stub
 
+    IAdhocTicket adhocTicket = carpark.issueAdhocTicket();
+
+    ui.printTicket(
+            carpark.getName(),
+            adhocTicket.getTicketNo(),
+            adhocTicket.getEntryDateTime(),
+            adhocTicket.getBarcode());
+
+    ui.display("Take Ticket");
   }
-
-
 
   @Override
   public void ticketInserted(String barcode) {
-    // TODO Auto-generated method stub
 
+    if (carpark.isSeasonTicketValid(barcode)) {
+
+      carpark.recordSeasonTicketEntry(barcode);
+
+      ui.discardTicket(); // eject valid ticket
+
+    } else {
+
+      ui.discardTicket(); // reject invalid ticket
+    }
   }
-
-
 
   @Override
   public void ticketTaken() {
-    // TODO Auto-generated method stub
 
+    entryGate.raise();
   }
-
-
 
   @Override
   public void notifyCarparkEvent() {
-    // TODO Auto-generated method stub
 
+    if (carpark.isFull()) {
+      ui.display("Car Park Full");
+    }
   }
-
-
 
   @Override
   public void carEventDetected(String detectorId, boolean detected) {
-    // TODO Auto-generated method stub
 
+    if (detectorId.equals(outsideSensor.getId())) {
+
+      if (detected) {
+
+        if (!carpark.isFull()) {
+
+          ui.display("Press Button");
+
+        } else {
+
+          ui.display("Full");
+        }
+      }
+    }
+
+    if (detectorId.equals(insideSensor.getId())) {
+
+      if (detected) {
+
+        if (entryGate.isRaised()) {
+
+          entryGate.lower();
+
+          notifyCarparkEvent();
+        }
+      }
+    }
   }
-
-
-
 }

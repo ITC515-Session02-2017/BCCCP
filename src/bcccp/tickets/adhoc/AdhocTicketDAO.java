@@ -5,66 +5,57 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AdhocTicketDAO  implements IAdhocTicketDAO  {
+/**
+ * A Data Access Object providing an interface to a database of tickets
+ */
+public class AdhocTicketDAO implements IAdhocTicketDAO {
 
-	private IAdhocTicketFactory factory;
+  private IAdhocTicketFactory factory;
 
-	List<IAdhocTicket> list;
+  List<IAdhocTicket> list;
 
-	private int currentTicketNo;
+  private int currentTicketNo;
 
-	
-	
-	public AdhocTicketDAO(IAdhocTicketFactory factory) {
+  public AdhocTicketDAO(IAdhocTicketFactory factory) {
 
-		this.factory = factory;
+    this.factory = factory;
 
-		list = new ArrayList<>();
-	}
+    list = new ArrayList<>();
+  }
 
+  @Override
+  public IAdhocTicket createTicket(String carparkId) {
 
+    IAdhocTicket ticket = factory.make(carparkId, currentTicketNo++);
 
-	@Override
-	public IAdhocTicket createTicket(String carparkId) {
+    list.add(ticket);
 
-		IAdhocTicket ticket = factory.make(carparkId, currentTicketNo++);
+    return ticket;
+  }
 
-		list.add(ticket);
+  @Override
+  public IAdhocTicket findTicketByBarcode(String barcode) {
 
-		return ticket;
+    IAdhocTicket ticket = null;
 
-	}
+    Iterator<IAdhocTicket> itr = list.iterator();
 
+    while (itr.hasNext()) {
 
+      if (itr.next().getBarcode().equals(barcode)) {
 
-	@Override
-	public IAdhocTicket findTicketByBarcode(String barcode) {
+        ticket = itr.next();
 
-		IAdhocTicket ticket = null;
+        break;
+      }
+    }
 
-		Iterator<IAdhocTicket> itr = list.iterator();
+    return ticket;
+  }
 
-		while (itr.hasNext()) {
+  @Override
+  public List<IAdhocTicket> getCurrentTickets() {
 
-			if (itr.next().getBarcode().equals(barcode)){
-
-				ticket = itr.next();
-
-			}
-		}
-
-		return ticket;
-	}
-
-
-
-	@Override
-	public List<IAdhocTicket> getCurrentTickets() {
-
-		return list.stream().filter( c -> c.isCurrent() == true ).collect(Collectors.toList());
-
-	}
-
-	
-	
+    return list.stream().filter(c -> c.isCurrent() == true).collect(Collectors.toList());
+  }
 }
