@@ -62,6 +62,7 @@ public class Carpark implements ICarpark {
     public boolean isFull() {
 
         return (numberOfCarsParked >= capacity) ? true : false ;
+
     }
 
 

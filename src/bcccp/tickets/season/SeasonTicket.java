@@ -15,6 +15,7 @@ public final class SeasonTicket implements ISeasonTicket {
 	private long startValidPeriod;
 	private long endValidPeriod;
 
+
   /** This class represents each Season Ticket object, which is instantiated in Main method
    *
    * @param ticketId unique identifier for each Season Ticket
@@ -66,6 +67,7 @@ public final class SeasonTicket implements ISeasonTicket {
 
 		while (usageRec.hasNext()) {
 
+
       if (usageRec.next().getSeasonTicketId().equals(getId())) {
 
         foundUsageRecord = true;
@@ -76,16 +78,18 @@ public final class SeasonTicket implements ISeasonTicket {
     }
 
     return foundUsageRecord;
+
 	}
 
 	@Override
 	public void recordUsage(IUsageRecord record) {
-
+    
     usages.add(record);
 	}
 
 	@Override
 	public IUsageRecord getCurrentUsageRecord() {
+
 
     Iterator<IUsageRecord> usageRecs = usages.iterator();
 
@@ -99,12 +103,14 @@ public final class SeasonTicket implements ISeasonTicket {
     }
 
     return currentUsage;
+
 	}
 
 	@Override
 	public void endUsage(long dateTime) {
 
     // Records the date and time of the end of this usage of the Season ticket.
+
 		// Will need to get the current usage record and write the dateTime to the usage record
 
 		Iterator<IUsageRecord> usageRecs = usages.iterator();
