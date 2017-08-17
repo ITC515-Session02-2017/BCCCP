@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 /**
  * A Data Access Object providing an interface to a database of tickets
  */
-public class AdhocTicketDAO implements IAdhocTicketDAO {
+public final class AdhocTicketDAO implements IAdhocTicketDAO {
 
   private IAdhocTicketFactory factory;
 
