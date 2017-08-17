@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Iterator;
 
-public class SeasonTicket implements ISeasonTicket {
+public final class SeasonTicket implements ISeasonTicket {
 	
 	private List<IUsageRecord> usages;
 	private IUsageRecord currentUsage = null;
@@ -14,6 +14,15 @@ public class SeasonTicket implements ISeasonTicket {
 	private String carparkId;
 	private long startValidPeriod;
 	private long endValidPeriod;
+
+  /** This class represents each Season Ticket object, which is instantiated in Main method
+   *
+   * @param ticketId unique identifier for each Season Ticket
+   * @param carparkId short or long term carpark
+   * @param startValidPeriod start date of the season ticket's valid period
+   * @param endValidPeriod end date of the season ticket's valid period
+   *
+   * */
 	
 	public SeasonTicket (String ticketId, 
 			             String carparkId, 
@@ -57,43 +66,45 @@ public class SeasonTicket implements ISeasonTicket {
 
 		while (usageRec.hasNext()) {
 
-		    if (usageRec.next().getSeasonTicketId().equals(getId())) {
+      if (usageRec.next().getSeasonTicketId().equals(getId())) {
 
-                foundUsageRecord = true;
-            }
+        foundUsageRecord = true;
+        break;
+      }
 
-            else foundUsageRecord = false;
-        }
+      else foundUsageRecord = false;
+    }
 
-        return foundUsageRecord;
+    return foundUsageRecord;
 	}
 
 	@Override
 	public void recordUsage(IUsageRecord record) {
 
-        usages.add(record);
+    usages.add(record);
 	}
 
 	@Override
 	public IUsageRecord getCurrentUsageRecord() {
 
-        Iterator<IUsageRecord> usageRecs = usages.iterator();
+    Iterator<IUsageRecord> usageRecs = usages.iterator();
 
-        while (usageRecs.hasNext()) {
+    while (usageRecs.hasNext()) {
 
-            if (usageRecs.next().getSeasonTicketId().equals(getId())) {
+      if (usageRecs.next().getSeasonTicketId().equals(getId())) {
 
-                currentUsage = usageRecs.next();
-            }
-        }
+        currentUsage = usageRecs.next();
+        break;
+      }
+    }
 
-        return currentUsage;
+    return currentUsage;
 	}
 
 	@Override
 	public void endUsage(long dateTime) {
 
-	    // Records the date and time of the end of this usage of the Season ticket.
+    // Records the date and time of the end of this usage of the Season ticket.
 		// Will need to get the current usage record and write the dateTime to the usage record
 
 		Iterator<IUsageRecord> usageRecs = usages.iterator();
@@ -103,6 +114,7 @@ public class SeasonTicket implements ISeasonTicket {
 			if (usageRecs.next().getSeasonTicketId().equals(getId())) {
 
 				usageRecs.next().finalise(dateTime);
+				break;
 			}
 		}
 	}
@@ -110,7 +122,7 @@ public class SeasonTicket implements ISeasonTicket {
 	@Override
 	public List<IUsageRecord> getUsageRecords() {
 
-        return usages;
+    return usages;
 	}
 
 
