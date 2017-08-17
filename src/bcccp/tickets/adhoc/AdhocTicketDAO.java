@@ -55,7 +55,7 @@ public final class AdhocTicketDAO implements IAdhocTicketDAO {
 
   @Override
   public List<IAdhocTicket> getCurrentTickets() {
-
     return list.stream().filter(c -> c.isCurrent() == true).collect(Collectors.toList());
   }
+
 }

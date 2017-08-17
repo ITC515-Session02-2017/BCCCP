@@ -25,11 +25,11 @@ public final class AdhocTicket implements IAdhocTicket {
   public AdhocTicket(String carparkId, int ticketNo, String barcode) {
 
     this.carparkId = carparkId;
-
+    
     this.ticketNo = ticketNo;
 
     this.barcode = barcode;
-
+    
     entryDateTime =
             new Date(
                     Integer.parseInt(barcode.substring(4, 8)),
@@ -49,19 +49,16 @@ public final class AdhocTicket implements IAdhocTicket {
 
   @Override
   public String getBarcode() {
-
     return barcode;
   }
 
   @Override
   public String getCarparkId() {
-
     return carparkId;
   }
 
   @Override
   public void enter(long dateTime) {
-
     entryDateTime = dateTime;
   }
 

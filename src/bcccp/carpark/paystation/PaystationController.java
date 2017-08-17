@@ -37,19 +37,19 @@ public class PaystationController implements IPaystationController {
     adhocTicket.pay(adhocTicket.getExitDateTime(), charge);
     carpark.recordAdhocTicketExit();
     ui.printTicket(
-            carpark.getName(),
-            adhocTicket.getTicketNo(),
-            adhocTicket.getEntryDateTime(),
-            adhocTicket.getPaidDateTime(),
-            charge,
-            adhocTicket.getBarcode());
+        carpark.getName(),
+        adhocTicket.getTicketNo(),
+        adhocTicket.getEntryDateTime(),
+        adhocTicket.getPaidDateTime(),
+        charge,
+        adhocTicket.getBarcode());
   }
 
   @Override
   public void ticketTaken() {
+      ui.display("Idle");
+      ui.deregisterController();
 
-    ui.display("Idle");
-    ui.deregisterController();
 
   }
 }

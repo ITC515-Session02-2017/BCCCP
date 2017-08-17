@@ -6,7 +6,6 @@ import bcccp.carpark.ICarSensorResponder;
 import bcccp.carpark.ICarpark;
 import bcccp.carpark.IGate;
 import bcccp.tickets.adhoc.IAdhocTicket;
-
 import java.util.Date;
 
 public class ExitController implements ICarSensorResponder, IExitController {
@@ -24,12 +23,11 @@ public class ExitController implements ICarSensorResponder, IExitController {
   /**
    * Description - a controller class for sensing the approach and departure of cars at the car park
    * exit gate.
-   *
-   * @param carpark  short or long term carpark
+   * @param carpark short or long term carpark
    * @param exitGate exit gate.
-   * @param is       sensor inside of gate
-   * @param os       senesor outside of gate
-   * @param ui       control pillar user interface
+   * @param is sensor inside of gate
+   * @param os sensor outside of gate
+   * @param ui control pillar user interface
    */
   public ExitController(Carpark carpark, IGate exitGate, ICarSensor is, ICarSensor os, IExitUI ui) {
 

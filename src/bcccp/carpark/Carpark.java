@@ -61,7 +61,8 @@ public class Carpark implements ICarpark {
     @Override
     public boolean isFull() {
 
-        return numberOfCarsParked >= capacity;
+        return (numberOfCarsParked >= capacity) ? true : false ;
+
     }
 
 
@@ -136,8 +137,9 @@ public class Carpark implements ICarpark {
 
         ISeasonTicket sTicket = seasonTicketDAO.findTicketById(ticketId);
 
-        return (dateTime.getTime() >= sTicket.getStartValidPeriod()) &&
-                (dateTime.getTime() <= sTicket.getEndValidPeriod());
+        return ((dateTime.getTime() >= sTicket.getStartValidPeriod()) &&
+                (dateTime.getTime() <= sTicket.getEndValidPeriod()))
+                ? true : false;
     }
 
 

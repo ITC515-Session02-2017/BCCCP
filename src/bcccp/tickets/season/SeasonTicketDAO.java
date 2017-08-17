@@ -5,7 +5,31 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import java.util.Date;
+
+
 public final class SeasonTicketDAO implements ISeasonTicketDAO {
+
+	private List<ISeasonTicket> seasonTickets;
+	private IUsageRecordFactory factory;
+
+  /** This class records the usage of Season Tickets
+   *
+   * @param factory factory for making Season Ticket usage records
+   *
+   * */
+	
+	public SeasonTicketDAO(IUsageRecordFactory factory) {
+
+		this.factory = factory;
+
+		seasonTickets = new ArrayList<>();
+
+	}
+
+
+	@Override
+	public void registerTicket(ISeasonTicket ticket) {
 
     private List<ISeasonTicket> seasonTickets;
     private IUsageRecordFactory factory;
@@ -31,7 +55,13 @@ public final class SeasonTicketDAO implements ISeasonTicketDAO {
     @Override
     public void deregisterTicket(ISeasonTicket ticket) {
 
-        // 'deregister' means: remove ticket from the seasonTickets ArrayList
+				sTicketRecs.remove();
+      
+				break;
+			}
+		}
+		
+	}
 
         Iterator<ISeasonTicket> sTicketRecs = seasonTickets.iterator();
 
@@ -58,12 +88,24 @@ public final class SeasonTicketDAO implements ISeasonTicketDAO {
 
         ISeasonTicket sTicket = null;
 
-        while (sTicketRecs.hasNext()) {
+				sTicket = sTicketRecs.next();
+      
+				break;
+			}
+			else {
+
+				sTicket = null;
+			}
+		}
+		return sTicket;
+	}
 
             if (sTicketRecs.next().getId().equals(ticketId)) {
 
                 sTicket = sTicketRecs.next();
+              
                 break;
+              
             } else {
 
                 sTicket = null;
