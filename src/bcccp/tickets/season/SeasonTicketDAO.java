@@ -1,5 +1,8 @@
 package bcccp.tickets.season;
 
+import bcccp.tickets.season.ISeasonTicket;
+import bcccp.tickets.season.IUsageRecordFactory;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -7,134 +10,94 @@ import java.util.List;
 
 import java.util.Date;
 
-
 public final class SeasonTicketDAO implements ISeasonTicketDAO {
 
-	private List<ISeasonTicket> seasonTickets;
-	private IUsageRecordFactory factory;
+  private List<ISeasonTicket> seasonTickets;
+  private IUsageRecordFactory factory;
 
-  /** This class records the usage of Season Tickets
+  /**
+   * This class records the usage of Season Tickets
    *
    * @param factory factory for making Season Ticket usage records
-   *
-   * */
-	
-	public SeasonTicketDAO(IUsageRecordFactory factory) {
+   */
+  public SeasonTicketDAO(IUsageRecordFactory factory) {
 
-		this.factory = factory;
+    this.factory = factory;
 
-		seasonTickets = new ArrayList<>();
+    seasonTickets = new ArrayList<>();
+  }
 
-	}
+  @Override
+  public void registerTicket(ISeasonTicket ticket) {
 
+    seasonTickets.add(ticket);
+  }
 
-	@Override
-	public void registerTicket(ISeasonTicket ticket) {
+  @Override
+  public void deregisterTicket(ISeasonTicket ticket) {
 
-    private List<ISeasonTicket> seasonTickets;
-    private IUsageRecordFactory factory;
+    Iterator<ISeasonTicket> sTicketRecs = seasonTickets.iterator();
 
-    /**
-     * This class records the usage of Season Tickets
-     *
-     * @param factory factory for making Season Ticket usage records
-     */
-    public SeasonTicketDAO(IUsageRecordFactory factory) {
+    while (sTicketRecs.hasNext()) {
 
-        this.factory = factory;
+      if (sTicketRecs.next().getId().equals(ticket.getId())) {
 
-        seasonTickets = new ArrayList<>();
+        sTicketRecs.remove();
+        break;
+      }
     }
+  }
 
-    @Override
-    public void registerTicket(ISeasonTicket ticket) {
+  @Override
+  public int getNumberOfTickets() {
 
-        seasonTickets.add(ticket);
+    return seasonTickets.size();
+  }
+
+  @Override
+  public ISeasonTicket findTicketById(String ticketId) {
+
+    Iterator<ISeasonTicket> sTicketRecs = seasonTickets.iterator();
+
+    ISeasonTicket sTicket = null;
+
+    while (sTicketRecs.hasNext()) {
+
+      if (sTicketRecs.next().getId().equals(ticketId)) {
+
+        sTicket = sTicketRecs.next();
+
+        break;
+
+      } else {
+
+        sTicket = null;
+      }
     }
+    return sTicket;
+  }
 
-    @Override
-    public void deregisterTicket(ISeasonTicket ticket) {
+  @Override
+  public void recordTicketEntry(String ticketId) {
 
-				sTicketRecs.remove();
-      
-				break;
-			}
-		}
-		
-	}
+    // This method creates a new usage record with current day and time as the startTime
+    // and uses recordUsage method from SeasonTicket class to record it to the ArrayList
 
-        Iterator<ISeasonTicket> sTicketRecs = seasonTickets.iterator();
+    Date dateTime = new Date();
 
-        while (sTicketRecs.hasNext()) {
+    IUsageRecord usageRecord = factory.make(ticketId, dateTime.getTime());
 
-            if (sTicketRecs.next().getId().equals(ticket.getId())) {
+    findTicketById(ticketId).recordUsage(usageRecord);
+  }
 
-                sTicketRecs.remove();
-                break;
-            }
-        }
-    }
+  @Override
+  public void recordTicketExit(String ticketId) {
 
-    @Override
-    public int getNumberOfTickets() {
+    // Finds an existing usage record and records the current day and time (on exiting of vehicle)
+    // on the record
 
-        return seasonTickets.size();
-    }
+    Date dateTime = new Date();
 
-    @Override
-    public ISeasonTicket findTicketById(String ticketId) {
-
-        Iterator<ISeasonTicket> sTicketRecs = seasonTickets.iterator();
-
-        ISeasonTicket sTicket = null;
-
-				sTicket = sTicketRecs.next();
-      
-				break;
-			}
-			else {
-
-				sTicket = null;
-			}
-		}
-		return sTicket;
-	}
-
-            if (sTicketRecs.next().getId().equals(ticketId)) {
-
-                sTicket = sTicketRecs.next();
-              
-                break;
-              
-            } else {
-
-                sTicket = null;
-            }
-        }
-        return sTicket;
-    }
-
-    @Override
-    public void recordTicketEntry(String ticketId) {
-
-        // This method creates a new usage record with current day and time as the startTime
-        // and uses recordUsage method from SeasonTicket class to record it to the ArrayList
-
-        Date dateTime = new Date();
-
-        IUsageRecord usageRecord = factory.make(ticketId, dateTime.getTime());
-
-        findTicketById(ticketId).recordUsage(usageRecord);
-    }
-
-    @Override
-    public void recordTicketExit(String ticketId) {
-
-        // Finds an existing usage record and records the current day and time (on exiting of vehicle)
-        // on the record
-
-        Date dateTime = new Date();
-
-        findTicketById(ticketId).endUsage(dateTime.getTime());
-    }
+    findTicketById(ticketId).endUsage(dateTime.getTime());
+  }
 }
