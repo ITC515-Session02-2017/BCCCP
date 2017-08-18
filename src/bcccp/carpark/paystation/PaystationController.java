@@ -47,9 +47,9 @@ public class PaystationController implements IPaystationController {
 
   @Override
   public void ticketTaken() {
-
       ui.display("Idle");
       ui.deregisterController();
+
 
   }
 }

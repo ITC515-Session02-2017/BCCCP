@@ -1,11 +1,10 @@
 package bcccp.tickets.season;
 
-import bcccp.tickets.season.ISeasonTicket;
-import bcccp.tickets.season.IUsageRecordFactory;
-
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
 import java.util.Date;
 
 
@@ -32,49 +31,65 @@ public final class SeasonTicketDAO implements ISeasonTicketDAO {
 	@Override
 	public void registerTicket(ISeasonTicket ticket) {
 
-		seasonTickets.add(ticket);
-		
-	}
+    private List<ISeasonTicket> seasonTickets;
+    private IUsageRecordFactory factory;
 
+    /**
+     * This class records the usage of Season Tickets
+     *
+     * @param factory factory for making Season Ticket usage records
+     */
+    public SeasonTicketDAO(IUsageRecordFactory factory) {
 
-	@Override
-	public void deregisterTicket(ISeasonTicket ticket) {
+        this.factory = factory;
 
-		// 'deregister' means: remove ticket from the seasonTickets ArrayList
+        seasonTickets = new ArrayList<>();
+    }
 
-		Iterator<ISeasonTicket> sTicketRecs = seasonTickets.iterator();
+    @Override
+    public void registerTicket(ISeasonTicket ticket) {
 
-		while (sTicketRecs.hasNext()) {
+        seasonTickets.add(ticket);
+    }
 
-			if (sTicketRecs.next().getId().equals(ticket.getId())) {
+    @Override
+    public void deregisterTicket(ISeasonTicket ticket) {
 
 				sTicketRecs.remove();
+      
 				break;
 			}
 		}
 		
 	}
 
+        Iterator<ISeasonTicket> sTicketRecs = seasonTickets.iterator();
 
-	@Override
-	public int getNumberOfTickets() {
+        while (sTicketRecs.hasNext()) {
 
-		return seasonTickets.size();
-	}
+            if (sTicketRecs.next().getId().equals(ticket.getId())) {
 
+                sTicketRecs.remove();
+                break;
+            }
+        }
+    }
 
-	@Override
-	public ISeasonTicket findTicketById(String ticketId) {
+    @Override
+    public int getNumberOfTickets() {
 
-		Iterator<ISeasonTicket> sTicketRecs = seasonTickets.iterator();
+        return seasonTickets.size();
+    }
 
-		ISeasonTicket sTicket = null;
+    @Override
+    public ISeasonTicket findTicketById(String ticketId) {
 
-		while (sTicketRecs.hasNext()) {
+        Iterator<ISeasonTicket> sTicketRecs = seasonTickets.iterator();
 
-			if (sTicketRecs.next().getId().equals(ticketId)) {
+        ISeasonTicket sTicket = null;
 
 				sTicket = sTicketRecs.next();
+      
 				break;
 			}
 			else {
@@ -85,33 +100,41 @@ public final class SeasonTicketDAO implements ISeasonTicketDAO {
 		return sTicket;
 	}
 
+            if (sTicketRecs.next().getId().equals(ticketId)) {
 
-	@Override
-	public void recordTicketEntry(String ticketId) {
+                sTicket = sTicketRecs.next();
+              
+                break;
+              
+            } else {
 
-		// This method creates a new usage record with current day and time as the startTime
-		// and uses recordUsage method from SeasonTicket class to record it to the ArrayList
+                sTicket = null;
+            }
+        }
+        return sTicket;
+    }
 
-		Date dateTime = new Date();
+    @Override
+    public void recordTicketEntry(String ticketId) {
 
-		IUsageRecord usageRecord = factory.make(ticketId, dateTime.getTime());
+        // This method creates a new usage record with current day and time as the startTime
+        // and uses recordUsage method from SeasonTicket class to record it to the ArrayList
 
-		findTicketById(ticketId).recordUsage(usageRecord);
+        Date dateTime = new Date();
 
-	}
+        IUsageRecord usageRecord = factory.make(ticketId, dateTime.getTime());
 
+        findTicketById(ticketId).recordUsage(usageRecord);
+    }
 
-	@Override
-	public void recordTicketExit(String ticketId) {
+    @Override
+    public void recordTicketExit(String ticketId) {
 
-		// Finds an existing usage record and records the current day and time (on exiting of vehicle)
-		// on the record
+        // Finds an existing usage record and records the current day and time (on exiting of vehicle)
+        // on the record
 
-		Date dateTime = new Date();
+        Date dateTime = new Date();
 
-		findTicketById(ticketId).endUsage(dateTime.getTime());
-		
-	}
-	
-	
+        findTicketById(ticketId).endUsage(dateTime.getTime());
+    }
 }
