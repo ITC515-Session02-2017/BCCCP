@@ -11,7 +11,6 @@ public class UsageRecord implements IUsageRecord {
    *
    * @param ticketId unique identifier for each Season Ticket
    * @param startDateTime start date of season ticket usage on a date
-   * @param endDateTime end date of season ticket usage on a date
    */
   public UsageRecord(String ticketId, long startDateTime) {
     this.ticketId = ticketId;
