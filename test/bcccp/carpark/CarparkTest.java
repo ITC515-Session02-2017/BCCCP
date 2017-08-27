@@ -371,6 +371,13 @@ class CarparkTest {
      */
     void registerSeasonTicket() {
 
+        ISeasonTicket tkt = mock(SeasonTicket.class);
+
+        testItem.registerSeasonTicket(tkt);
+
+        assertEquals(true, testItem.isSeasonTicketInUse(tkt.getId()));
+
+
         try {
 
             testItem.registerSeasonTicket(new SeasonTicket("S9999", "Wrong Name", 0L, 0L));
@@ -395,7 +402,7 @@ class CarparkTest {
         testItem.registerSeasonTicket(tkt);
 
         testItem.deregisterSeasonTicket(tkt);
-        // this test is failing because an element can't be removed directly from a collection while iterating
+
         assertEquals(false, testItem.isSeasonTicketInUse(tkt.getId()));
     }
 
