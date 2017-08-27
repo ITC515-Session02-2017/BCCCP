@@ -358,9 +358,48 @@ class CarparkTest {
 
         /** ********************************************************************* */
 
-    /* TODO: write a boundary test, eg. ticket duration spanning working hours AND out of hours. */
+
+        entryStrDate = "02042013053542"; // "02-04-2013 05:35:42"
+
+        try {
+
+            entryDate = formatter.parse(entryStrDate);
+
+        } catch (ParseException e) {
+
+            e.printStackTrace();
+        }
+
+        exitStrDate = "02042013093542"; // entrydate + 2 hour: "02-04-2013 09:35:42"
+
+        try {
+
+            exitDate = formatter.parse(exitStrDate);
+
+        } catch (ParseException e) {
+
+            e.printStackTrace();
+        }
+
+        cp = mock(Carpark.class);
+
+        ticket = new AdhocTicket(cp.getName(), 1, entryStrDate);
+
+        ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 
         logger.log(Level.INFO, "Boundary test for: OUT OF HOURS and WORKING HOURS");
+
+        logger.log(Level.INFO, "Entry Date: " + ft.format(ticket.getEntryDateTime()));
+
+        logger.log(
+                Level.INFO,
+                "Checkout Date: " + ft.format(ticket.getEntryDateTime() + TimeUnit.HOURS.toMillis(2)));
+        // formula tested below is from:  public float calculateAddHocTicketCharge(long entryDateTime)
+        chargeAmount = (exitDate.getTime() - entryDate.getTime()) * WORKING_HRS_RATE / 60000;
+
+        // two dollars an hour for two hour = 4 dollars (at "out of hours" rate)
+        // plus five dollars an hour for two hours = $14
+        assertEquals(14.0, chargeAmount);
     }
 
     @Test
