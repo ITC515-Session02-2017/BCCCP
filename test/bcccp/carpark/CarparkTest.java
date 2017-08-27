@@ -262,6 +262,8 @@ class CarparkTest {
         float WORKING_HRS_RATE =
                 5.0f; //'rates' in public float calculateAddHocTicketCharge(long entryDateTime)
 
+        float OUT_OF_HRS_RATE = 2.0f;   //not yet defined in public float calculateAddHocTicketCharge(long entryDateTime)
+
         float chargeAmount;
 
         Date entryDate = null;
@@ -351,7 +353,7 @@ class CarparkTest {
                 Level.INFO,
                 "Checkout Date: " + ft.format(ticket.getEntryDateTime() + TimeUnit.HOURS.toMillis(2)));
         // formula tested below is from:  public float calculateAddHocTicketCharge(long entryDateTime)
-        chargeAmount = (exitDate.getTime() - entryDate.getTime()) * WORKING_HRS_RATE / 60000;
+        chargeAmount = (exitDate.getTime() - entryDate.getTime()) * OUT_OF_HRS_RATE / 60000;
 
         // two dollars an hour for two hour = 4 dollars (at "out of hours" rate)
         assertEquals(4.0, chargeAmount);
