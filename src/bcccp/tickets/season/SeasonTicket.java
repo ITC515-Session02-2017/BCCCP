@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Iterator;
 
-public final class SeasonTicket implements ISeasonTicket {
-	
+public class SeasonTicket implements ISeasonTicket {
+
 	private List<IUsageRecord> usages;
 	private IUsageRecord currentUsage = null;
-	
+
 	private String ticketId;
 	private String carparkId;
 	private long startValidPeriod;
@@ -24,10 +24,10 @@ public final class SeasonTicket implements ISeasonTicket {
    * @param endValidPeriod end date of the season ticket's valid period
    *
    * */
-	
-	public SeasonTicket (String ticketId, 
-			             String carparkId, 
-			             long startValidPeriod,
+
+  public SeasonTicket(String ticketId,
+					  String carparkId,
+					  long startValidPeriod,
 			             long endValidPeriod) {
 
 		this.ticketId = ticketId;
@@ -83,8 +83,8 @@ public final class SeasonTicket implements ISeasonTicket {
 
 	@Override
 	public void recordUsage(IUsageRecord record) {
-    
-    usages.add(record);
+
+		usages.add(record);
 	}
 
 	@Override

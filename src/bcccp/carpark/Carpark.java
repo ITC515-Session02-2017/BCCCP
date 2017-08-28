@@ -13,141 +13,139 @@ import bcccp.tickets.season.SeasonTicketDAO;
 
 public final class Carpark implements ICarpark {
 
-  private List<ICarparkObserver> observers;
-  private String carparkId;
-  private int capacity;
-  private int numberOfCarsParked;
-  private IAdhocTicketDAO adhocTicketDAO;
-  private ISeasonTicketDAO seasonTicketDAO;
+    private List<ICarparkObserver> observers;
+    private String carparkId;
+    private int capacity;
+    private int numberOfCarsParked;
+    private IAdhocTicketDAO adhocTicketDAO;
+    private ISeasonTicketDAO seasonTicketDAO;
 
-  /**
-   * This class represents the car park, registers entry and exit of cars and registers tickets,
-   * both ad hoc and season
-   *
-   * @param name short or long term car park
-   * @param capacity total number of cars that can park in it
-   * @param adhocTicketDAO record of ad hoc ticket
-   * @param seasonTicketDAO record of season ticket
-   */
-  public Carpark(
-      String name, int capacity, IAdhocTicketDAO adhocTicketDAO, ISeasonTicketDAO seasonTicketDAO) {
+    /**
+     * This class represents the car park, registers entry and exit of cars and registers tickets,
+     * both ad hoc and season
+     *
+     * @param name            short or long term car park
+     * @param capacity        total number of cars that can park in it
+     * @param adhocTicketDAO  record of ad hoc ticket
+     * @param seasonTicketDAO record of season ticket
+     */
+    public Carpark(
+            String name, int capacity, IAdhocTicketDAO adhocTicketDAO, ISeasonTicketDAO seasonTicketDAO) {
 
-    this.carparkId = name;
-    this.capacity = capacity;
-    this.adhocTicketDAO = adhocTicketDAO;
-    this.seasonTicketDAO = seasonTicketDAO;
+        this.carparkId = name;
+        this.capacity = capacity;
+        this.adhocTicketDAO = adhocTicketDAO;
+        this.seasonTicketDAO = seasonTicketDAO;
 
-    observers = new ArrayList<>();
-  }
+        observers = new ArrayList<>();
+    }
 
-  @Override
-  public void register(ICarparkObserver observer) {
+    @Override
+    public void register(ICarparkObserver observer) {
 
-    observers.add(observer);
-  }
+        observers.add(observer);
+    }
 
-  @Override
-  public void deregister(ICarparkObserver observer) {
+    @Override
+    public void deregister(ICarparkObserver observer) {
 
-    observers.remove(observer);
-    numberOfCarsParked--;
-  }
+        observers.remove(observer);
+        numberOfCarsParked--;
+    }
 
-  @Override
-  public String getName() {
+    @Override
+    public String getName() {
 
-    return carparkId;
-  }
+        return carparkId;
+    }
 
-  @Override
-  public boolean isFull() {
+    @Override
+    public boolean isFull() {
 
-    return (numberOfCarsParked >= capacity) ? true : false;
-  }
+        return numberOfCarsParked >= capacity;
+    }
 
-  @Override
-  public IAdhocTicket issueAdhocTicket() {
+    @Override
+    public IAdhocTicket issueAdhocTicket() {
 
-    return adhocTicketDAO.createTicket(carparkId);
-  }
+        return adhocTicketDAO.createTicket(carparkId);
+    }
 
-  @Override
-  public void recordAdhocTicketEntry() {
+    @Override
+    public void recordAdhocTicketEntry() {
 
-    numberOfCarsParked++;
-  }
+        numberOfCarsParked++;
+    }
 
-  @Override
-  public IAdhocTicket getAdhocTicket(String barcode) {
+    @Override
+    public IAdhocTicket getAdhocTicket(String barcode) {
 
-    return adhocTicketDAO.findTicketByBarcode(barcode);
-  }
+        return adhocTicketDAO.findTicketByBarcode(barcode);
+    }
 
-  @Override
-  public float calculateAddHocTicketCharge(long entryDateTime) {
-    // Calculation: get current Date and Time, subtract entryDateTime, multiply result by
-    // the $ charge rate and return charge. Assumption that rates are a fixed rate of $5.00 per hour.
-    // Convert time to hours by dividing by 60,000. Assumption this is short-stay tariff car park.
+    @Override
+    public float calculateAddHocTicketCharge(long entryDateTime) {
+        // Calculation: get current Date and Time, subtract entryDateTime, multiply result by
+        // the $ charge rate and return charge. Assumption that rates are a fixed rate of $5.00 per hour.
+        // Convert time to hours by dividing by 60,000. Assumption this is short-stay tariff car park.
 
-    float rates = 5.0f;
+        float rates = 5.0f;
 
-    Date dateTime = new Date();
+        Date dateTime = new Date();
 
-    float chargeAmount = (dateTime.getTime() - entryDateTime) * rates / 60000;
+        float chargeAmount = (dateTime.getTime() - entryDateTime) * rates / 60000;
 
-    return chargeAmount;
-  }
+        return chargeAmount;
+    }
 
-  @Override
-  public void recordAdhocTicketExit() {
+    @Override
+    public void recordAdhocTicketExit() {
 
-    numberOfCarsParked--;
-  }
+        numberOfCarsParked--;
+    }
 
-  @Override
-  public void registerSeasonTicket(ISeasonTicket seasonTicket) {
+    @Override
+    public void registerSeasonTicket(ISeasonTicket seasonTicket) {
 
-    seasonTicketDAO.registerTicket(seasonTicket);
-  }
+        seasonTicketDAO.registerTicket(seasonTicket);
+    }
 
-  @Override
-  public void deregisterSeasonTicket(ISeasonTicket seasonTicket) {
+    @Override
+    public void deregisterSeasonTicket(ISeasonTicket seasonTicket) {
 
-    seasonTicketDAO.deregisterTicket(seasonTicket);
-  }
+        seasonTicketDAO.deregisterTicket(seasonTicket);
+    }
 
-  @Override
-  public boolean isSeasonTicketValid(String ticketId) {
+    @Override
+    public boolean isSeasonTicketValid(String ticketId) {
 
-    // If today's date is within the startValidPeriod and endValidPeriod, the season ticket is valid
+        // If today's date is within the startValidPeriod and endValidPeriod, the season ticket is valid
 
-    Date dateTime = new Date();
+        Date dateTime = new Date();
 
-    ISeasonTicket sTicket = seasonTicketDAO.findTicketById(ticketId);
+        ISeasonTicket sTicket = seasonTicketDAO.findTicketById(ticketId);
 
-    return ((dateTime.getTime() >= sTicket.getStartValidPeriod())
-            && (dateTime.getTime() <= sTicket.getEndValidPeriod()))
-        ? true
-        : false;
-  }
+        return (dateTime.getTime() >= sTicket.getStartValidPeriod())
+                && (dateTime.getTime() <= sTicket.getEndValidPeriod());
+    }
 
-  @Override
-  public boolean isSeasonTicketInUse(String ticketId) {
+    @Override
+    public boolean isSeasonTicketInUse(String ticketId) {
 
-    ISeasonTicket sTicket = seasonTicketDAO.findTicketById(ticketId);
+        ISeasonTicket sTicket = seasonTicketDAO.findTicketById(ticketId);
 
-    return sTicket.inUse();
-  }
+        return sTicket.inUse();
+    }
 
-  @Override
-  public void recordSeasonTicketEntry(String ticketId) {
+    @Override
+    public void recordSeasonTicketEntry(String ticketId) {
 
-    seasonTicketDAO.recordTicketEntry(ticketId);
-  }
+        seasonTicketDAO.recordTicketEntry(ticketId);
+    }
 
-  @Override
-  public void recordSeasonTicketExit(String ticketId) {
+    @Override
+    public void recordSeasonTicketExit(String ticketId) {
 
-    seasonTicketDAO.recordTicketExit(ticketId);
-  }
+        seasonTicketDAO.recordTicketExit(ticketId);
+    }
 }

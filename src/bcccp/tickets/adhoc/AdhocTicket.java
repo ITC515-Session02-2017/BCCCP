@@ -32,12 +32,12 @@ public final class AdhocTicket implements IAdhocTicket {
     
     entryDateTime =
             new Date(
-                    Integer.parseInt(barcode.substring(4, 8)),
-                    Integer.parseInt(barcode.substring(2, 4)),
+                    Integer.parseInt(barcode.substring(4, 8)) - 1900,
+                    Integer.parseInt(barcode.substring(2, 4)) - 1,
                     Integer.parseInt(barcode.substring(0, 2)),
-                    Integer.parseInt(barcode.substring(9, 11)),
-                    Integer.parseInt(barcode.substring(11, 13)),
-                    Integer.parseInt(barcode.substring(13)))
+                    Integer.parseInt(barcode.substring(8, 10)),
+                    Integer.parseInt(barcode.substring(10, 12)),
+                    Integer.parseInt(barcode.substring(12)))
                     .getTime();
   }
 
