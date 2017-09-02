@@ -23,6 +23,7 @@ public class ExitController implements ICarSensorResponder, IExitController {
   /**
    * Description - a controller class for sensing the approach and departure of cars at the car park
    * exit gate.
+   *
    * @param carpark short or long term carpark
    * @param exitGate exit gate.
    * @param is sensor inside of gate
@@ -31,15 +32,21 @@ public class ExitController implements ICarSensorResponder, IExitController {
    */
   public ExitController(Carpark carpark, IGate exitGate, ICarSensor is, ICarSensor os, IExitUI ui) {
 
-    this.carpark = carpark;
+      if (carpark != null && exitGate != null && os != null && is != null && ui != null) {
+          this.carpark = carpark;
 
-    this.exitGate = exitGate;
+          this.exitGate = exitGate;
 
-    insideSensor = is;
+          insideSensor = is;
 
-    outsideSensor = os;
+          outsideSensor = os;
 
-    this.ui = ui;
+          this.ui = ui;
+
+      } else {
+
+          throw new RuntimeException("Arguments cannot be null.");
+      }
   }
 
   // STEP: Read barcode.
@@ -51,29 +58,44 @@ public class ExitController implements ICarSensorResponder, IExitController {
 
     adhocTicket = carpark.getAdhocTicket(ticketStr);
 
-    if (adhocTicket != null) {
+      if (adhocTicket != null && adhocTicket.isPaid()) {
 
       if (exitTime < (adhocTicket.getPaidDateTime() + FIFTEEN_MINUTES)) {
-        ticketTaken();
-      }
 
-      // otherwise:  an intercom in the control pillar is activated and connected to the attendant
-      // in the car park office.
+          ui.display("Take Processed Ticket");
+
+        ticketTaken();
+
+      } else {
+          // otherwise:  an intercom in the control pillar is activated and connected to the attendant
+          // in the car park office.
+          ui.beep();
+
+          ui.display("Please wait for the parking attendant...");
+      }
 
       return;
     }
 
     if (carpark.isSeasonTicketValid(ticketStr)) {
+
+        ui.display("Take Processed Ticket");
+
       ticketTaken();
+
+    } else {
+        // otherwise:  an intercom in the control pillar is activated and connected to the attendant
+        // in the car park office.
+        ui.beep();
+
+        ui.display("Please wait for the parking attendant...");
     }
-
-    // otherwise:  an intercom in the control pillar is activated and connected to the attendant
-    // in the car park office.
-
   }
 
   @Override
   public void ticketTaken() {
+
+      carpark.getAdhocTicket(adhocTicket.getBarcode()).exit(new Date().getTime());
 
     exitGate.raise();
   }

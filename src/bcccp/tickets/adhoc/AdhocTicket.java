@@ -17,7 +17,12 @@ public final class AdhocTicket implements IAdhocTicket {
   private String barcode;
   private STATE state;
 
-  private enum STATE {ISSUED, CURRENT, PAID, EXITED}
+  private enum STATE {
+    ISSUED,
+    CURRENT,
+    PAID,
+    EXITED
+  }
 
   /**
    * A ticket for casual carpark clients.
@@ -69,7 +74,6 @@ public final class AdhocTicket implements IAdhocTicket {
     entryDateTime = dateTime;
 
     state = STATE.CURRENT;
-
   }
 
   @Override
@@ -112,6 +116,20 @@ public final class AdhocTicket implements IAdhocTicket {
     return charge;
   }
 
+  public String toString() {
+    Date entryDate = new Date(entryDateTime);
+    Date paidDate = new Date(paidDateTime);
+    Date exitDate = new Date(exitDateTime);
+
+    return "Carpark: " + carparkId + "\n"
+            + "Ticket No: " + ticketNo + "\n"
+            + "Entry Time: " + entryDate + "\n"
+            + "Paid Time: " + paidDate + "\n"
+            + "Exit Time: " + exitDate + "\n"
+            + "State: " + state + "\n"
+            + "Barcode: " + barcode;
+  }
+
   @Override
   public void exit(long dateTime) {
 
@@ -143,8 +161,7 @@ public final class AdhocTicket implements IAdhocTicket {
   }
 
   /**
-   * Description:
-   * - Method for conversion of hex endcoded ticket details
+   * Description: - Method for conversion of hex encoded ticket details
    *
    * @param barcode
    */
@@ -170,8 +187,5 @@ public final class AdhocTicket implements IAdhocTicket {
                     Integer.parseInt(tmp.substring(10, 12)),
                     Integer.parseInt(tmp.substring(12)))
                     .getTime();
-
   }
-
-
 }
