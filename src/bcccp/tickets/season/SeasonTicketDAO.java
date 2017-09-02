@@ -43,7 +43,9 @@ public final class SeasonTicketDAO implements ISeasonTicketDAO {
       if (sTicketRecs.next().getId().equals(ticket.getId())) {
 
         sTicketRecs.remove();
+
         break;
+
       }
     }
   }

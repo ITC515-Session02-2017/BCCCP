@@ -1,17 +1,15 @@
 package bcccp.carpark;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
 
-import bcccp.tickets.adhoc.AdhocTicketDAO;
 import bcccp.tickets.adhoc.IAdhocTicket;
 import bcccp.tickets.adhoc.IAdhocTicketDAO;
 import bcccp.tickets.season.ISeasonTicket;
 import bcccp.tickets.season.ISeasonTicketDAO;
-import bcccp.tickets.season.SeasonTicketDAO;
 
-public final class Carpark implements ICarpark {
+public class Carpark implements ICarpark {
 
     private List<ICarparkObserver> observers;
     private String carparkId;
