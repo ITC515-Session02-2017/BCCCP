@@ -9,7 +9,7 @@ import bcccp.tickets.adhoc.IAdhocTicketDAO;
 import bcccp.tickets.season.ISeasonTicket;
 import bcccp.tickets.season.ISeasonTicketDAO;
 
-public class Carpark implements ICarpark {
+public final class Carpark implements ICarpark {
 
     private List<ICarparkObserver> observers;
     private String carparkId;
@@ -48,7 +48,6 @@ public class Carpark implements ICarpark {
     public void deregister(ICarparkObserver observer) {
 
         observers.remove(observer);
-        numberOfCarsParked--;
     }
 
     @Override
