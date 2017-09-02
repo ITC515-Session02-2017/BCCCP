@@ -34,7 +34,7 @@ class CarparkTest {
 
     static EntryController entryController;
 
-    Logger logger = Logger.getLogger("Carpark test client");
+    Logger logger = Logger.getLogger("Unit testing for Carpark class.");
 
 
 
@@ -73,7 +73,8 @@ class CarparkTest {
     @Test
     void isValidConstruct() {
 
-        logger.log(Level.INFO, "testing constructor...");
+        logger.log(Level.INFO, "Testing exception handling for carpark constructor...");
+
 
         // invalid 'name' argument: null
         try {
@@ -128,7 +129,7 @@ class CarparkTest {
     /** returns the carpark name */
     void getName() {
 
-        logger.log(Level.INFO, "testing getName...");
+        logger.log(Level.INFO, "Testing getName...");
 
         assertEquals("Alphabet Street", testItem.getName());
     }
@@ -137,7 +138,7 @@ class CarparkTest {
     /** returns a boolean indicating whether the carpark is full (ie no adhoc spaces available) */
     void isFull() {
 
-        logger.log(Level.INFO, "isFull testing...");
+        logger.log(Level.INFO, "Testing isFull...");
         //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
@@ -272,6 +273,8 @@ class CarparkTest {
      * <p>NOTE: following test is necessarily 'white box'</p>
      */
     void calculateAddHocTicketCharge() {
+
+        logger.log(Level.INFO, "Testing calculateAdHocTicketCharge...");
 
         float WORKING_HRS_RATE =
                 5.0f; //'rates' in public float calculateAddHocTicketCharge(long entryDateTime)
@@ -421,6 +424,8 @@ class CarparkTest {
      */
     void registerSeasonTicket() {
 
+        logger.log(Level.INFO, "Testing registerSeasonTicket...");
+
         ISeasonTicket tkt = mock(SeasonTicket.class);
 
         testItem.registerSeasonTicket(tkt);
@@ -447,6 +452,9 @@ class CarparkTest {
      */
     void deregisterSeasonTicket() {
 
+
+        logger.log(Level.INFO, "Testing deregisterSeasonTicket...");
+
         ISeasonTicket tkt = mock(SeasonTicket.class);
 
         testItem.registerSeasonTicket(tkt);
@@ -465,6 +473,9 @@ class CarparkTest {
     @Test
     void isSeasonTicketInUse() {
 
+
+        logger.log(Level.INFO, "Testing isSeasonTicketInUse...");
+
         ISeasonTicket tkt = mock(SeasonTicket.class);
 
         testItem.registerSeasonTicket(tkt);
@@ -479,6 +490,9 @@ class CarparkTest {
      * in use
      */
     void recordSeasonTicketEntry() {
+
+
+        logger.log(Level.INFO, "Testing recordSeasonTicketEntry...");
 
         ISeasonTicket tkt = mock(SeasonTicket.class);
         //cars + 1
@@ -512,6 +526,9 @@ class CarparkTest {
      * or is not currently in use
      */
     void recordSeasonTicketExit() {
+
+
+        logger.log(Level.INFO, "Testing recordSeasonTicketExit...");
 
         try {
 
