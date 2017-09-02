@@ -1,9 +1,7 @@
 package bcccp.tickets.adhoc;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
+
 
 /**
  * A Data Access Object providing an interface to a database of tickets
@@ -12,7 +10,7 @@ public final class AdhocTicketDAO implements IAdhocTicketDAO {
 
   private IAdhocTicketFactory factory;
 
-  List<IAdhocTicket> list;
+  private Map<String, IAdhocTicket> currentTickets;
 
   private int currentTicketNo;
 
@@ -20,7 +18,7 @@ public final class AdhocTicketDAO implements IAdhocTicketDAO {
 
     this.factory = factory;
 
-    list = new ArrayList<>();
+    currentTickets = new HashMap<>();
   }
 
   @Override
@@ -28,7 +26,7 @@ public final class AdhocTicketDAO implements IAdhocTicketDAO {
 
     IAdhocTicket ticket = factory.make(carparkId, currentTicketNo++);
 
-    list.add(ticket);
+    currentTickets.put(ticket.getBarcode(), ticket);
 
     return ticket;
   }
@@ -36,26 +34,12 @@ public final class AdhocTicketDAO implements IAdhocTicketDAO {
   @Override
   public IAdhocTicket findTicketByBarcode(String barcode) {
 
-    IAdhocTicket ticket = null;
-
-    Iterator<IAdhocTicket> itr = list.iterator();
-
-    while (itr.hasNext()) {
-
-      if (itr.next().getBarcode().equals(barcode)) {
-
-        ticket = itr.next();
-
-        break;
-      }
-    }
-
-    return ticket;
+    return currentTickets.get(barcode);
   }
 
   @Override
   public List<IAdhocTicket> getCurrentTickets() {
-    return list.stream().filter(c -> c.isCurrent() == true).collect(Collectors.toList());
+    return Collections.unmodifiableList(new ArrayList<IAdhocTicket>(currentTickets.values()));
   }
 
 }

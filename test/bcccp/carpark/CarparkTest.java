@@ -5,6 +5,7 @@ import bcccp.carpark.entry.EntryUI;
 import bcccp.tickets.adhoc.*;
 import bcccp.tickets.season.*;
 import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -33,10 +34,12 @@ class CarparkTest {
 
     static EntryController entryController;
 
-    static Logger logger = Logger.getLogger("Carpark test client");
+    Logger logger = Logger.getLogger("Carpark test client");
+
+
 
     @BeforeAll
-    static void setUp() {
+    static void before() {
 
         adhocTicketDAO = new AdhocTicketDAO(new AdhocTicketFactory());
 
@@ -55,11 +58,13 @@ class CarparkTest {
         entryController = new EntryController(testItem, egate, eos, eis, eui);
     }
 
-    @After
-    static void resetCarPark() {
+
+    @AfterEach
+    void after() {
 
         testItem = new Carpark("Alphabet Street", 3, adhocTicketDAO, seasonTicketDAO);
     }
+
 
     /* NOTE: Unchecked exceptions do not need to be declared in a method or constructor's throws clause if they can be thrown
     by the execution of the method. See: https://docs.oracle.com/javase/7/docs/api/java/lang/RuntimeException.html
@@ -151,8 +156,7 @@ class CarparkTest {
      */
     void issueAdhocTicket() {
 
-        logger.log(Level.INFO, "testing issueAdhocTicket...");
-
+        logger.log(Level.INFO, "Testing issueAdhocTicket...");
         //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
@@ -182,7 +186,7 @@ class CarparkTest {
     void register() {
 
         // no test
-        logger.log(Level.INFO, "EntryController added...");
+        logger.log(Level.INFO, "EntryController added....Not tested.");
     }
 
     @Test
@@ -190,21 +194,25 @@ class CarparkTest {
     void deregister() {
 
         // no test
-        logger.log(Level.INFO, "EntryController removed...");
+        logger.log(Level.INFO, "EntryController removed....Not tested.");
     }
 
     @Test
     void recordAdhocTicketExit() {
 
-        logger.log(Level.INFO, "testing recordAdhocTicketExit...");
+        logger.log(Level.INFO, "Testing recordAdhocTicketExit...");
         //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
         testItem.recordAdhocTicketEntry();
-
+        //cars + 1 = capacity = 3 = full
         testItem.recordAdhocTicketEntry();
 
+        if (testItem.isFull())
+            logger.log(Level.INFO, "Carpark has reached capacity...");
+        //3 - 1 = 2  (capacity - 1)
         testItem.recordAdhocTicketExit();
+        logger.log(Level.INFO, "Carpark has a space available...");
 
         assertEquals(false, testItem.isFull());
 
@@ -218,7 +226,7 @@ class CarparkTest {
      */
     void recordAdhocTicketEntry() {
 
-        logger.log(Level.INFO, "testing recordAdhocTicketEntry...");
+        logger.log(Level.INFO, "Testing recordAdhocTicketEntry...");
         //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
@@ -237,7 +245,7 @@ class CarparkTest {
      */
     void getAdhocTicket() {
 
-        logger.log(Level.INFO, "testing getAdhocTicket...");
+        logger.log(Level.INFO, "Testing getAdhocTicket...");
 
         IAdhocTicket expected = testItem.issueAdhocTicket();
 
@@ -451,7 +459,7 @@ class CarparkTest {
     @Test
     void isSeasonTicketValid() {
 
-        // untested. (valid if other tests are valid!)
+        //not tested (valid if dependents are valid)
     }
 
     @Test
