@@ -75,6 +75,7 @@ class CarparkTest {
 
         logger.log(Level.INFO, "Testing exception handling for carpark constructor...");
 
+
         // invalid 'name' argument: null
         try {
 
@@ -157,7 +158,6 @@ class CarparkTest {
     void issueAdhocTicket() {
 
         logger.log(Level.INFO, "Testing issueAdhocTicket...");
-
         //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
@@ -228,16 +228,14 @@ class CarparkTest {
     void recordAdhocTicketEntry() {
 
         logger.log(Level.INFO, "Testing recordAdhocTicketEntry...");
-
         //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
         testItem.recordAdhocTicketEntry();
-
+        //car + 1
         testItem.recordAdhocTicketEntry();
 
         assertEquals(true, testItem.isFull());
-
 
     }
 
@@ -267,15 +265,12 @@ class CarparkTest {
 
     @Test
     /**
-     * The ‘Out-of-Hours’ rate of $2/hr should be charged for all the time the car was parked outside
-     * <br>
-     * of business hours. The ‘Business-Hours’ rate of $5/hr should be charged for all the time the
-     * <br>
-     * car was parked during business hours. Business hours are defined as between 7AM and 7PM, Monday
-     * <br>
-     * to Friday Parking charges are calculated in minute increments. <br>
+     * The ‘Out-of-Hours’ rate of $2/hr should be charged for all the time the car was parked outside <br />
+     * of business hours. The ‘Business-Hours’ rate of $5/hr should be charged for all the time the <br />
+     * car was parked during business hours. Business hours are defined as between 7AM and 7PM, Monday <br />
+     * to Friday Parking charges are calculated in minute increments. <br />
      *
-     * <p>NOTE: following test is necessarily 'white box'
+     * <p>NOTE: following test is necessarily 'white box'</p>
      */
     void calculateAddHocTicketCharge() {
 
@@ -319,9 +314,8 @@ class CarparkTest {
             e.printStackTrace();
         }
 
-        Carpark cp = mock(Carpark.class);
 
-        IAdhocTicket ticket = new AdhocTicket(cp.getName(), 1, entryStrDate);
+        IAdhocTicket ticket = new AdhocTicket(testItem.getName(), 1, entryStrDate);
 
         SimpleDateFormat ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 
@@ -361,9 +355,7 @@ class CarparkTest {
             e.printStackTrace();
         }
 
-        cp = mock(Carpark.class);
-
-        ticket = new AdhocTicket(cp.getName(), 1, entryStrDate);
+        ticket = new AdhocTicket(testItem.getName(), 2, entryStrDate);
 
         ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 
@@ -405,9 +397,7 @@ class CarparkTest {
             e.printStackTrace();
         }
 
-        cp = mock(Carpark.class);
-
-        ticket = new AdhocTicket(cp.getName(), 1, entryStrDate);
+        ticket = new AdhocTicket(testItem.getName(), 3, entryStrDate);
 
         ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 
@@ -506,25 +496,24 @@ class CarparkTest {
 
         ISeasonTicket tkt = mock(SeasonTicket.class);
         //cars + 1
+        testItem.recordSeasonTicketEntry(tkt.getId());
+        //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
         testItem.recordAdhocTicketEntry();
 
-        testItem.recordSeasonTicketEntry(tkt.getId());
-
         assertEquals(true, testItem.isFull());
 
-        testItem = new Carpark("Alphabet Street", 3, adhocTicketDAO, seasonTicketDAO);
 
         try {
-
+            //no ticket has the following id:
             testItem.recordSeasonTicketEntry("badId");
 
             fail("Expected a RuntimeException to be thrown");
 
         } catch (Exception e) {
 
-            assertEquals("Id does not exist!", e.getMessage());
+            assertEquals("No ticket found!", e.getMessage());
         }
 
         /** todo: test for exception thrown if id of car exists and is 'in use' */
