@@ -12,7 +12,7 @@ public class AdhocTicketFactory implements IAdhocTicketFactory {
   @Override
   public IAdhocTicket make(String carparkId, int ticketNo) {
 
-    return new AdhocTicket(carparkId, ticketNo, generateBarCode());
+    return new AdhocTicket(carparkId, ticketNo, generateBarCode(ticketNo, entryDate()));
   }
 
   /**
@@ -22,11 +22,23 @@ public class AdhocTicketFactory implements IAdhocTicketFactory {
    *
    * @return String
    */
-  private String generateBarCode() {
+  private String entryDate() {
 
     // Display a date in day, month, year format
     DateFormat formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
 
     return formatter.format(new Date().getTime()); // the string that is encoded (to a bar code)
   }
+  private String generateBarCode(int ticketNum, String entryDate) {
+
+    String prefix = "0041"; // hex representation of "A". Unicode: U+0041
+
+    String hexNum = Integer.toHexString(ticketNum);
+
+    String hexDate = Long.toHexString(Long.parseLong(entryDate));
+    // insert delimiter ":" between hex values
+    return new StringBuilder(prefix + ":").append(hexNum + ":").append(hexDate).toString();
+  }
+
 }
+

@@ -4,7 +4,12 @@ import bcccp.carpark.entry.EntryController;
 import bcccp.carpark.entry.EntryUI;
 import bcccp.tickets.adhoc.*;
 import bcccp.tickets.season.*;
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterAll;
+=======
+import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
+>>>>>>> 5ab247556a921dbb697855d1876d52e4aeaeac73
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -33,10 +38,12 @@ class CarparkTest {
 
     static EntryController entryController;
 
-    static Logger logger = Logger.getLogger("Carpark test client");
+    Logger logger = Logger.getLogger("Unit testing for Carpark class.");
+
+
 
     @BeforeAll
-    static void setUp() {
+    static void before() {
 
         adhocTicketDAO = new AdhocTicketDAO(new AdhocTicketFactory());
 
@@ -55,11 +62,18 @@ class CarparkTest {
         entryController = new EntryController(testItem, egate, eos, eis, eui);
     }
 
+<<<<<<< HEAD
     @AfterAll
     static void resetCarPark() {
+=======
+
+    @AfterEach
+    void after() {
+>>>>>>> 5ab247556a921dbb697855d1876d52e4aeaeac73
 
         testItem = new Carpark("Alphabet Street", 3, adhocTicketDAO, seasonTicketDAO);
     }
+
 
     /* NOTE: Unchecked exceptions do not need to be declared in a method or constructor's throws clause if they can be thrown
     by the execution of the method. See: https://docs.oracle.com/javase/7/docs/api/java/lang/RuntimeException.html
@@ -67,6 +81,9 @@ class CarparkTest {
     (which extends RuntimeException). */
     @Test
     void isValidConstruct() {
+
+        logger.log(Level.INFO, "Testing exception handling for carpark constructor...");
+
 
         // invalid 'name' argument: null
         try {
@@ -121,12 +138,16 @@ class CarparkTest {
     /** returns the carpark name */
     void getName() {
 
+        logger.log(Level.INFO, "Testing getName...");
+
         assertEquals("Alphabet Street", testItem.getName());
     }
 
     @Test
     /** returns a boolean indicating whether the carpark is full (ie no adhoc spaces available) */
     void isFull() {
+
+        logger.log(Level.INFO, "Testing isFull...");
         //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
@@ -136,7 +157,6 @@ class CarparkTest {
 
         assertEquals(true, testItem.isFull());
 
-        logger.log(Level.INFO, "isFull called...");
     }
 
     @Test
@@ -146,6 +166,7 @@ class CarparkTest {
      */
     void issueAdhocTicket() {
 
+        logger.log(Level.INFO, "Testing issueAdhocTicket...");
         //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
@@ -164,7 +185,7 @@ class CarparkTest {
             assertEquals("Carpark is full.", e.getMessage());
         }
 
-        logger.log(Level.INFO, "issueAdhocTicket called...");
+
     }
 
     @Test
@@ -175,7 +196,7 @@ class CarparkTest {
     void register() {
 
         // no test
-        logger.log(Level.INFO, "EntryController added...");
+        logger.log(Level.INFO, "EntryController added....Not tested.");
     }
 
     @Test
@@ -183,24 +204,29 @@ class CarparkTest {
     void deregister() {
 
         // no test
-        logger.log(Level.INFO, "EntryController removed...");
+        logger.log(Level.INFO, "EntryController removed....Not tested.");
     }
 
     @Test
     void recordAdhocTicketExit() {
 
+        logger.log(Level.INFO, "Testing recordAdhocTicketExit...");
         //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
         testItem.recordAdhocTicketEntry();
-
+        //cars + 1 = capacity = 3 = full
         testItem.recordAdhocTicketEntry();
 
+        if (testItem.isFull())
+            logger.log(Level.INFO, "Carpark has reached capacity...");
+        //3 - 1 = 2  (capacity - 1)
         testItem.recordAdhocTicketExit();
+        logger.log(Level.INFO, "Carpark has a space available...");
 
         assertEquals(false, testItem.isFull());
 
-        logger.log(Level.INFO, "recordAdhocTicketExit called...");
+
     }
 
     @Test
@@ -210,16 +236,16 @@ class CarparkTest {
      */
     void recordAdhocTicketEntry() {
 
+        logger.log(Level.INFO, "Testing recordAdhocTicketEntry...");
         //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
         testItem.recordAdhocTicketEntry();
-
+        //car + 1
         testItem.recordAdhocTicketEntry();
 
         assertEquals(true, testItem.isFull());
 
-        logger.log(Level.INFO, "recordAdhocTicketEntry called...");
     }
 
     @Test
@@ -228,6 +254,8 @@ class CarparkTest {
      * or is not current (ie not in use).
      */
     void getAdhocTicket() {
+
+        logger.log(Level.INFO, "Testing getAdhocTicket...");
 
         IAdhocTicket expected = testItem.issueAdhocTicket();
 
@@ -242,22 +270,20 @@ class CarparkTest {
 
         testItem.recordAdhocTicketExit();
 
-        logger.log(Level.INFO, "getAdhocTicket called...");
     }
 
     @Test
     /**
-     * The ‘Out-of-Hours’ rate of $2/hr should be charged for all the time the car was parked outside
-     * <br>
-     * of business hours. The ‘Business-Hours’ rate of $5/hr should be charged for all the time the
-     * <br>
-     * car was parked during business hours. Business hours are defined as between 7AM and 7PM, Monday
-     * <br>
-     * to Friday Parking charges are calculated in minute increments. <br>
+     * The ‘Out-of-Hours’ rate of $2/hr should be charged for all the time the car was parked outside <br />
+     * of business hours. The ‘Business-Hours’ rate of $5/hr should be charged for all the time the <br />
+     * car was parked during business hours. Business hours are defined as between 7AM and 7PM, Monday <br />
+     * to Friday Parking charges are calculated in minute increments. <br />
      *
-     * <p>NOTE: following test is necessarily 'white box'
+     * <p>NOTE: following test is necessarily 'white box'</p>
      */
     void calculateAddHocTicketCharge() {
+
+        logger.log(Level.INFO, "Testing calculateAdHocTicketCharge...");
 
         float WORKING_HRS_RATE =
                 5.0f; //'rates' in public float calculateAddHocTicketCharge(long entryDateTime)
@@ -297,9 +323,8 @@ class CarparkTest {
             e.printStackTrace();
         }
 
-        Carpark cp = mock(Carpark.class);
 
-        IAdhocTicket ticket = new AdhocTicket(cp.getName(), 1, entryStrDate);
+        IAdhocTicket ticket = new AdhocTicket(testItem.getName(), 1, entryStrDate);
 
         SimpleDateFormat ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 
@@ -339,9 +364,7 @@ class CarparkTest {
             e.printStackTrace();
         }
 
-        cp = mock(Carpark.class);
-
-        ticket = new AdhocTicket(cp.getName(), 1, entryStrDate);
+        ticket = new AdhocTicket(testItem.getName(), 2, entryStrDate);
 
         ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 
@@ -383,9 +406,7 @@ class CarparkTest {
             e.printStackTrace();
         }
 
-        cp = mock(Carpark.class);
-
-        ticket = new AdhocTicket(cp.getName(), 1, entryStrDate);
+        ticket = new AdhocTicket(testItem.getName(), 3, entryStrDate);
 
         ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 
@@ -411,6 +432,8 @@ class CarparkTest {
      * same as the carpark name.
      */
     void registerSeasonTicket() {
+
+        logger.log(Level.INFO, "Testing registerSeasonTicket...");
 
         ISeasonTicket tkt = mock(SeasonTicket.class);
 
@@ -438,6 +461,9 @@ class CarparkTest {
      */
     void deregisterSeasonTicket() {
 
+
+        logger.log(Level.INFO, "Testing deregisterSeasonTicket...");
+
         ISeasonTicket tkt = mock(SeasonTicket.class);
 
         testItem.registerSeasonTicket(tkt);
@@ -449,10 +475,15 @@ class CarparkTest {
 
     @Test
     void isSeasonTicketValid() {
+
+        //not tested (valid if dependents are valid)
     }
 
     @Test
     void isSeasonTicketInUse() {
+
+
+        logger.log(Level.INFO, "Testing isSeasonTicketInUse...");
 
         ISeasonTicket tkt = mock(SeasonTicket.class);
 
@@ -469,27 +500,29 @@ class CarparkTest {
      */
     void recordSeasonTicketEntry() {
 
+
+        logger.log(Level.INFO, "Testing recordSeasonTicketEntry...");
+
         ISeasonTicket tkt = mock(SeasonTicket.class);
         //cars + 1
+        testItem.recordSeasonTicketEntry(tkt.getId());
+        //cars + 1
         testItem.recordAdhocTicketEntry();
         //cars + 1
         testItem.recordAdhocTicketEntry();
-
-        testItem.recordSeasonTicketEntry(tkt.getId());
 
         assertEquals(true, testItem.isFull());
 
-        testItem = new Carpark("Alphabet Street", 3, adhocTicketDAO, seasonTicketDAO);
 
         try {
-
+            //no ticket has the following id:
             testItem.recordSeasonTicketEntry("badId");
 
             fail("Expected a RuntimeException to be thrown");
 
         } catch (Exception e) {
 
-            assertEquals("Id does not exist!", e.getMessage());
+            assertEquals("No ticket found!", e.getMessage());
         }
 
         /** todo: test for exception thrown if id of car exists and is 'in use' */
@@ -502,6 +535,9 @@ class CarparkTest {
      * or is not currently in use
      */
     void recordSeasonTicketExit() {
+
+
+        logger.log(Level.INFO, "Testing recordSeasonTicketExit...");
 
         try {
 

@@ -20,6 +20,7 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
    * Description - a controller class for sensing cars approaching and leaving the entry gate,
    * raising and lowering the gate, and communicating information to the 'control pillar' and
    * carpark.
+   *
    * @param carpark short term or long term
    * @param entryGate entry gate
    * @param os sensor outside gate.
@@ -29,15 +30,22 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
   public EntryController(
       Carpark carpark, IGate entryGate, ICarSensor os, ICarSensor is, IEntryUI ui) {
 
-    this.carpark = carpark;
+    if (carpark != null && entryGate != null && os != null && is != null && ui != null) {
 
-    this.entryGate = entryGate;
+      this.carpark = carpark;
 
-    outsideSensor = os;
+      this.entryGate = entryGate;
 
-    insideSensor = is;
+      outsideSensor = os;
 
-    this.ui = ui;
+      insideSensor = is;
+
+      this.ui = ui;
+
+    } else {
+
+      throw new RuntimeException("Arguments cannot be null.");
+    }
   }
 
   @Override
@@ -45,13 +53,9 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
 
     IAdhocTicket adhocTicket = carpark.issueAdhocTicket();
 
-    ui.printTicket(
-      
-        carpark.getName(),
-        adhocTicket.getTicketNo(),
-        adhocTicket.getEntryDateTime(),
-        adhocTicket.getBarcode());
-        ui.display("Take Ticket");
+    ui.printTicket(adhocTicket.toString());
+
+    ui.display("Take Ticket");
   }
 
   @Override
