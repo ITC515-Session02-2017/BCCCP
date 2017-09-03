@@ -4,10 +4,10 @@ import bcccp.carpark.entry.EntryController;
 import bcccp.carpark.entry.EntryUI;
 import bcccp.tickets.adhoc.*;
 import bcccp.tickets.season.*;
-import org.junit.After;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.logging.Level;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(MockitoJUnitRunner.class)
+//RunWith(MockitoJUnitRunner.class)
 class CarparkTest {
 
     static IAdhocTicketDAO adhocTicketDAO;
@@ -55,7 +55,7 @@ class CarparkTest {
         entryController = new EntryController(testItem, egate, eos, eis, eui);
     }
 
-    @After
+    @AfterAll
     static void resetCarPark() {
 
         testItem = new Carpark("Alphabet Street", 3, adhocTicketDAO, seasonTicketDAO);
