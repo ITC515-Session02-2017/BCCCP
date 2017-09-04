@@ -29,16 +29,16 @@ public class AdhocTicketFactory implements IAdhocTicketFactory {
 
     return formatter.format(new Date().getTime()); // the string that is encoded (to a bar code)
   }
-
   private String generateBarCode(int ticketNum, String entryDate) {
 
     String prefix = "0041"; // hex representation of "A". Unicode: U+0041
 
     String hexNum = Integer.toHexString(ticketNum);
 
-    String hexDate = Integer.toHexString(Integer.parseInt(entryDate));
+    String hexDate = Long.toHexString(Long.parseLong(entryDate));
     // insert delimiter ":" between hex values
     return new StringBuilder(prefix + ":").append(hexNum + ":").append(hexDate).toString();
   }
 
 }
+
