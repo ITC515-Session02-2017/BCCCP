@@ -9,7 +9,7 @@ import bcccp.tickets.adhoc.IAdhocTicketDAO;
 import bcccp.tickets.season.ISeasonTicket;
 import bcccp.tickets.season.ISeasonTicketDAO;
 
-public final class Carpark implements ICarpark {
+public class Carpark implements ICarpark {
 
     private List<ICarparkObserver> observers;
     private String carparkId;
