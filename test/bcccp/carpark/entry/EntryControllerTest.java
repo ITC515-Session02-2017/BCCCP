@@ -15,8 +15,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+
 import org.mockito.MockitoAnnotations;
 import static org.mockito.Mockito.*;
 
@@ -43,9 +42,6 @@ class EntryControllerTest {
   static SeasonTicket seasonTicket;
 
   static String barcode;
-
-  @Captor
-  private ArgumentCaptor <String> captor;
 
   @BeforeAll
   static void setupAllTests() {
@@ -207,7 +203,7 @@ class EntryControllerTest {
 
     // NOTE: Also need to get private enum value from sut (=WAITING)
 
-    Carpark testCarpark = new Carpark("Test Carpark", 3, adhocTicketDAOTest, seasonTicketDAOTest)
+    Carpark testCarpark = new Carpark("Test Carpark", 3, adhocTicketDAOTest, seasonTicketDAOTest);
 
     for (int i = 0; i >= 3; i++) {
 
@@ -224,7 +220,7 @@ class EntryControllerTest {
 
     // NOTE: Also need to get private enum value from sut (=WAITING)
 
-    Carpark testCarpark = new Carpark("Test Carpark", 100, adhocTicketDAOTest, seasonTicketDAOTest)
+    Carpark testCarpark = new Carpark("Test Carpark", 100, adhocTicketDAOTest, seasonTicketDAOTest);
 
     for (int i = 0; i >= 3; i++) {
 
