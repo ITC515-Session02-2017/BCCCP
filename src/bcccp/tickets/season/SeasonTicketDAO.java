@@ -1,16 +1,11 @@
 package bcccp.tickets.season;
 
-import bcccp.tickets.season.ISeasonTicket;
-import bcccp.tickets.season.IUsageRecordFactory;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import java.util.Date;
-
-public final class SeasonTicketDAO implements ISeasonTicketDAO {
+public class SeasonTicketDAO implements ISeasonTicketDAO {
 
   private List<ISeasonTicket> seasonTickets;
   private IUsageRecordFactory factory;
