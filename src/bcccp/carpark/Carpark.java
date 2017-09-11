@@ -105,6 +105,15 @@ public class Carpark implements ICarpark {
     public void registerSeasonTicket(ISeasonTicket seasonTicket) {
 
         seasonTicketDAO.registerTicket(seasonTicket);
+
+        if (seasonTicket.getCarparkId() != this.carparkId) {
+
+            throw new RuntimeException("SeasonTicket in registerSeasonTicket has invalid CarparkId: " +
+             seasonTicket.getCarparkId() + ", should be CarparkId: " + this.carparkId);
+
+        }
+
+
     }
 
     @Override
@@ -144,5 +153,10 @@ public class Carpark implements ICarpark {
     public void recordSeasonTicketExit(String ticketId) {
 
         seasonTicketDAO.recordTicketExit(ticketId);
+    }
+
+    // Following getter method to be removed after testing
+    public int getNumberOfCarsParked() {
+        return numberOfCarsParked;
     }
 }

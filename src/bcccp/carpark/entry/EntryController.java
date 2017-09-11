@@ -340,4 +340,13 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
   private void log(String message) {
     System.out.println("EntryController : " + message);
   }
+
+  // Following getter method to be removed after testing
+  public STATE getState() {
+    return state;
+   }
+
+  public STATE getPreviousState() {
+    return prevState;
+   }
 }
