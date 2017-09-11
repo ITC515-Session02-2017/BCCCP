@@ -1,191 +1,213 @@
 package bcccp.tickets.adhoc;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.Date;
+import java.util.regex.Pattern;
 import javax.xml.bind.DatatypeConverter;
 
 /**
  * A ticket for casual carpark users.
  */
-public final class AdhocTicket implements IAdhocTicket {
+public class AdhocTicket implements IAdhocTicket {
 
-  private String carparkId;
-  private int ticketNo;
-  private long entryDateTime;
-  private long paidDateTime;
-  private long exitDateTime;
-  private float charge;
-  private String barcode;
-  private STATE state;
 
-  private enum STATE {
-    ISSUED,
-    CURRENT,
-    PAID,
-    EXITED
-  }
+    private String carparkId;
+    private int ticketNo;
+    private long entryDateTime;
+    private long paidDateTime;
+    private long exitDateTime;
+    private float charge;
+    private String barcode;
+    private STATE state;
 
-  /**
-   * A ticket for casual carpark clients.
-   *
-   * @param carparkId the carpark. Cannot be null or empty.
-   * @param ticketNo the ticket number. Cannot be zero or negative.
-   * @param barcode the string of values encoded by the barcode. Cannot be null or empty.
-   */
-  public AdhocTicket(String carparkId, int ticketNo, String barcode) {
-
-    if (isValue(carparkId) && isValue(barcode) && isValidID(ticketNo)) {
-
-      this.carparkId = carparkId;
-
-      this.ticketNo = ticketNo;
-
-      this.barcode = barcode;
-
-      barCodeInfo(barcode);
-
-      state = STATE.ISSUED;
-
-    } else {
-
-      throw new IllegalArgumentException(
-              "Invalid Input: check that the arguments passed to the constructor " + "are valid.");
+    private enum STATE {
+        ISSUED,
+        CURRENT,
+        PAID,
+        EXITED
     }
-  }
 
-  @Override
-  public int getTicketNo() {
+    /**
+     * A ticket for casual carpark clients.
+     *
+     * @param carparkId the carpark. Cannot be null or empty.
+     * @param ticketNo  the ticket number. Cannot be zero or negative.
+     * @param barcode   the string of values encoded by the barcode. Cannot be null or empty.
+     */
+    public AdhocTicket(String carparkId, int ticketNo, String barcode) {
 
-    return ticketNo;
-  }
+        if (isValue(carparkId) && isValidID(ticketNo) && isValue(barcode)) {
 
-  @Override
-  public String getBarcode() {
-    return barcode;
-  }
+            this.carparkId = carparkId;
 
-  @Override
-  public String getCarparkId() {
-    return carparkId;
-  }
+            this.ticketNo = ticketNo;
 
-  @Override
-  public void enter(long dateTime) {
+            this.barcode = barcode;
 
-    entryDateTime = dateTime;
+            barCodeInfo(barcode);
 
-    state = STATE.CURRENT;
-  }
+            state = STATE.ISSUED;
 
-  @Override
-  public long getEntryDateTime() {
+        } else {
 
-    return entryDateTime;
-  }
+            throw new IllegalArgumentException(
+                    "Invalid Input: check that the arguments passed to the constructor " + "are valid.");
+        }
+    }
 
-  @Override
-  public boolean isCurrent() {
+    @Override
+    public int getTicketNo() {
 
-    return state == STATE.CURRENT;
-  }
+        return ticketNo;
+    }
 
-  @Override
-  public void pay(long dateTime, float charge) {
+    @Override
+    public String getBarcode() {
+        return barcode;
+    }
 
-    paidDateTime = dateTime;
+    @Override
+    public String getCarparkId() {
+        return carparkId;
+    }
 
-    this.charge = charge;
+    @Override
+    public void enter(long dateTime) {
 
-    state = STATE.PAID;
-  }
+        entryDateTime = dateTime;
 
-  @Override
-  public long getPaidDateTime() {
+        state = STATE.CURRENT;
+    }
 
-    return paidDateTime;
-  }
+    @Override
+    public long getEntryDateTime() {
 
-  @Override
-  public boolean isPaid() {
+        return entryDateTime;
+    }
 
-    return state == STATE.PAID;
-  }
+    @Override
+    public boolean isCurrent() {
 
-  @Override
-  public float getCharge() {
+        return state == STATE.CURRENT;
+    }
 
-    return charge;
-  }
+    @Override
+    public void pay(long dateTime, float charge) {
 
-  public String toString() {
-    Date entryDate = new Date(entryDateTime);
-    Date paidDate = new Date(paidDateTime);
-    Date exitDate = new Date(exitDateTime);
+        paidDateTime = dateTime;
 
-    return "Carpark: " + carparkId + "\n"
-            + "Ticket No: " + ticketNo + "\n"
-            + "Entry Time: " + entryDate + "\n"
-            + "Paid Time: " + paidDate + "\n"
-            + "Exit Time: " + exitDate + "\n"
-            + "State: " + state + "\n"
-            + "Barcode: " + barcode;
-  }
+        this.charge = charge;
 
-  @Override
-  public void exit(long dateTime) {
+        state = STATE.PAID;
+    }
 
-    exitDateTime = dateTime;
+    @Override
+    public long getPaidDateTime() {
 
-    state = STATE.EXITED;
-  }
+        return paidDateTime;
+    }
 
-  @Override
-  public long getExitDateTime() {
+    @Override
+    public boolean isPaid() {
 
-    return exitDateTime;
-  }
+        return state == STATE.PAID;
+    }
 
-  @Override
-  public boolean hasExited() {
+    @Override
+    public float getCharge() {
 
-    return state == STATE.EXITED;
-  }
+        return charge;
+    }
 
-  private Boolean isValue(String str) {
+    public String toString() {
+        Date entryDate = new Date(entryDateTime);
+        Date paidDate = new Date(paidDateTime);
+        Date exitDate = new Date(exitDateTime);
 
-    return (str != null && !str.isEmpty());
-  }
+        return "Carpark: " + carparkId + "\n"
+                + "Ticket No: " + ticketNo + "\n"
+                + "Entry Time: " + entryDate + "\n"
+                + "Paid Time: " + paidDate + "\n"
+                + "Exit Time: " + exitDate + "\n"
+                + "State: " + state + "\n"
+                + "Barcode: " + barcode;
+    }
 
-  private Boolean isValidID(int id) {
+    @Override
+    public void exit(long dateTime) {
 
-    return id > 0;
-  }
+        exitDateTime = dateTime;
 
-  /**
-   * Description: - Method for conversion of hex encoded ticket details
-   *
-   * @param barcode
-   */
-  private void barCodeInfo(String barcode) {
+        state = STATE.EXITED;
+    }
 
-    String[] elements = barcode.split(":");
+    @Override
+    public long getExitDateTime() {
 
-    byte[] ticketBytes = DatatypeConverter.parseHexBinary(elements[1]);
+        return exitDateTime;
+    }
 
-    byte[] entryDateBytes = DatatypeConverter.parseHexBinary(elements[2]);
+    @Override
+    public boolean hasExited() {
 
-    ticketNo = Integer.parseInt(new String(ticketBytes));
+        return state == STATE.EXITED;
+    }
 
-    String tmp = new String(entryDateBytes);
-    // the constructor for Date used below is deprecated but serves the purpose.
-    // Refer: http://docs.oracle.com/javase/6/docs/api/java/util/Date.html for explanation of "- 1900", etc.
-    entryDateTime =
-            new Date(
-                    Integer.parseInt(tmp.substring(4, 8)) - 1900,
-                    Integer.parseInt(tmp.substring(2, 4)) - 1,
-                    Integer.parseInt(tmp.substring(0, 2)),
-                    Integer.parseInt(tmp.substring(8, 10)),
-                    Integer.parseInt(tmp.substring(10, 12)),
-                    Integer.parseInt(tmp.substring(12)))
-                    .getTime();
-  }
+    private Boolean isValue(String str) {
+
+        return (str != null && !str.isEmpty());
+    }
+
+    private Boolean isValidID(int id) {
+
+        return id > 0;
+    }
+
+    /**
+     * Description: - Method for conversion of hex encoded ticket details
+     *
+     * @param barcode
+     */
+    private void barCodeInfo(String barcode) {
+
+        // U+002D ‭ - unicode HYPHEN-MINUS
+        Pattern p = Pattern.compile("\u002D", Pattern.LITERAL);
+
+        String[] elements = p.split(barcode);
+
+        System.out.println("barcode:" + barcode);
+
+        if (elements[1].length() % 2 == 1) elements[1] = "0" + elements[1];
+
+        if (elements[2].length() % 2 == 1) elements[2] = "0" + elements[2];
+
+        System.out.println("Datehex:" + elements[2]);
+
+        ticketNo = Integer.parseInt(elements[1], 16);
+
+        System.out.println("Ticket Number: " + ticketNo);
+
+        byte[] entryDateBytes = DatatypeConverter.parseHexBinary(elements[2]);
+
+        String entryDate = null;
+        try {
+            entryDate = new String(entryDateBytes, "UTF-16");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("DateString:" + entryDate);
+
+        entryDateTime =
+                new Date(
+                        Integer.parseInt(entryDate.substring(4, 8)) - 1900,
+                        Integer.parseInt(entryDate.substring(2, 4)) - 1,
+                        Integer.parseInt(entryDate.substring(0, 2)),
+                        Integer.parseInt(entryDate.substring(8, 10)),
+                        Integer.parseInt(entryDate.substring(10, 12)),
+                        Integer.parseInt(entryDate.substring(12)))
+                        .getTime();
+    }
+
 }
