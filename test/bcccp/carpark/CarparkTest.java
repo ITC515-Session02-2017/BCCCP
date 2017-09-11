@@ -33,43 +33,45 @@ class CarparkTest {
 
     static ISeasonTicketDAO seasonTicketDAO;
 
+    static Carpark cp;
+
     static Carpark testItem;
 
     static EntryController entryController;
 
-    Logger logger = Logger.getLogger("Unit testing for Carpark class.");
+    static String DEFAULT_CARPARK = "Alphabet Street";
 
+    static int DEFAULT_CAPACITY = 3;
+
+    Logger logger = Logger.getLogger("Unit testing for Carpark class.");
 
 
     @BeforeAll
     static void before() {
 
-        adhocTicketDAO = new AdhocTicketDAO(new AdhocTicketFactory());
+        adhocTicketDAO = spy(new AdhocTicketDAO(new AdhocTicketFactory()));
 
-        seasonTicketDAO = new SeasonTicketDAO(new UsageRecordFactory());
+        seasonTicketDAO = spy(new SeasonTicketDAO(new UsageRecordFactory()));
 
-        testItem = new Carpark("Alphabet Street", 3, adhocTicketDAO, seasonTicketDAO);
+        testItem = new Carpark(DEFAULT_CARPARK, DEFAULT_CAPACITY, adhocTicketDAO, seasonTicketDAO);
 
-        CarSensor eos = mock(CarSensor.class);
+        entryController = mock(EntryController.class);
 
-        Gate egate = mock(Gate.class);
-
-        CarSensor eis = mock(CarSensor.class);
-
-        EntryUI eui = mock(EntryUI.class);
-
-        entryController = new EntryController(testItem, egate, eos, eis, eui);
     }
 
-    @AfterAll
-    static void resetCarPark() { }
 
 
     @AfterEach
     void after() {
 
 
-        testItem = new Carpark("Alphabet Street", 3, adhocTicketDAO, seasonTicketDAO);
+        adhocTicketDAO = spy(new AdhocTicketDAO(new AdhocTicketFactory()));
+
+        seasonTicketDAO = spy(new SeasonTicketDAO(new UsageRecordFactory()));
+
+        testItem = new Carpark(DEFAULT_CARPARK, DEFAULT_CAPACITY, adhocTicketDAO, seasonTicketDAO);
+
+
     }
 
 
@@ -165,24 +167,10 @@ class CarparkTest {
     void issueAdhocTicket() {
 
         logger.log(Level.INFO, "Testing issueAdhocTicket...");
-        //cars + 1
-        testItem.recordAdhocTicketEntry();
-        //cars + 1
-        testItem.recordAdhocTicketEntry();
-        //cars + 1
-        testItem.recordAdhocTicketEntry();
 
-        try {
+        testItem.issueAdhocTicket();
 
-            testItem.issueAdhocTicket();
-
-            fail("Expected a RuntimeException to be thrown");
-
-        } catch (Exception e) {
-
-            assertEquals("Carpark is full.", e.getMessage());
-        }
-
+        verify(adhocTicketDAO).createTicket("Alphabet Street");
 
     }
 
@@ -193,16 +181,24 @@ class CarparkTest {
      */
     void register() {
 
-        // no test
-        logger.log(Level.INFO, "EntryController added....Not tested.");
+
+        logger.log(Level.INFO, "EntryController added....");
+
+        testItem.register(entryController);
+
+
     }
 
     @Test
     /** remove observer as an entity to be notified */
     void deregister() {
 
-        // no test
-        logger.log(Level.INFO, "EntryController removed....Not tested.");
+
+        logger.log(Level.INFO, "EntryController removed....");
+
+        testItem.deregister(entryController);
+
+
     }
 
     @Test
@@ -257,16 +253,11 @@ class CarparkTest {
 
         IAdhocTicket expected = testItem.issueAdhocTicket();
 
-        IAdhocTicket other = testItem.issueAdhocTicket();
-
-        IAdhocTicket another = testItem.issueAdhocTicket();
-
         IAdhocTicket ticket = testItem.getAdhocTicket(expected.getBarcode());
 
         // This test is failing when only one ticket has been issued.
         assertEquals(expected.getEntryDateTime(), ticket.getEntryDateTime());
 
-        testItem.recordAdhocTicketExit();
 
     }
 
@@ -433,11 +424,14 @@ class CarparkTest {
 
         logger.log(Level.INFO, "Testing registerSeasonTicket...");
 
-        ISeasonTicket tkt = mock(SeasonTicket.class);
 
-        testItem.registerSeasonTicket(tkt);
+        ISeasonTicket tktA = mock(SeasonTicket.class);
 
-        assertEquals(true, testItem.isSeasonTicketInUse(tkt.getId()));
+        doReturn("S2222").when(tktA).getId();
+
+        testItem.registerSeasonTicket(tktA);
+
+        assertEquals(true, testItem.isSeasonTicketInUse("S2222"));
 
 
         try {
@@ -452,6 +446,7 @@ class CarparkTest {
         }
     }
 
+
     @Test
     /**
      * deregisters the season ticket so that the season ticket may no longer be used to access the
@@ -464,17 +459,20 @@ class CarparkTest {
 
         ISeasonTicket tkt = mock(SeasonTicket.class);
 
+        when(tkt.getId()).thenReturn("S2222");
+
         testItem.registerSeasonTicket(tkt);
 
         testItem.deregisterSeasonTicket(tkt);
 
-        assertEquals(false, testItem.isSeasonTicketInUse(tkt.getId()));
+        verify(seasonTicketDAO).deregisterTicket(tkt);
+
     }
 
     @Test
     void isSeasonTicketValid() {
 
-        //not tested (valid if dependents are valid)
+        //not tested (valid if other methods are tested and passing)
     }
 
     @Test
@@ -484,6 +482,8 @@ class CarparkTest {
         logger.log(Level.INFO, "Testing isSeasonTicketInUse...");
 
         ISeasonTicket tkt = mock(SeasonTicket.class);
+
+        when(tkt.getId()).thenReturn("S2222");
 
         testItem.registerSeasonTicket(tkt);
 
@@ -502,14 +502,14 @@ class CarparkTest {
         logger.log(Level.INFO, "Testing recordSeasonTicketEntry...");
 
         ISeasonTicket tkt = mock(SeasonTicket.class);
-        //cars + 1
-        testItem.recordSeasonTicketEntry(tkt.getId());
-        //cars + 1
-        testItem.recordAdhocTicketEntry();
-        //cars + 1
-        testItem.recordAdhocTicketEntry();
 
-        assertEquals(true, testItem.isFull());
+        when(tkt.getId()).thenReturn("S2222");
+
+        testItem.registerSeasonTicket(tkt);
+
+        testItem.recordSeasonTicketEntry(tkt.getId());
+
+        verify(seasonTicketDAO).recordTicketEntry("S2222");
 
 
         try {
@@ -537,15 +537,17 @@ class CarparkTest {
 
         logger.log(Level.INFO, "Testing recordSeasonTicketExit...");
 
-        try {
+        ISeasonTicket tkt = mock(SeasonTicket.class);
 
-            testItem.recordSeasonTicketEntry("bad id");
+        when(tkt.getId()).thenReturn("S2222");
 
-            fail("Expected a RuntimeException to be thrown");
+        testItem.registerSeasonTicket(tkt);
 
-        } catch (Exception e) {
+        testItem.recordSeasonTicketEntry(tkt.getId());
 
-            assertEquals("Id does not exist!", e.getMessage());
-        }
+        testItem.recordSeasonTicketExit(tkt.getId());
+
+        verify(seasonTicketDAO).recordTicketExit(tkt.getId());
+
     }
 }

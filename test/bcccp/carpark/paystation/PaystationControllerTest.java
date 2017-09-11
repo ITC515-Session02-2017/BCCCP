@@ -61,9 +61,9 @@ class PaystationControllerTest {
 
     ticketNumber = String.format("0x02",38);
 
-    barcodeFormatDateddmmyyyy = String.format("0x04",3062018);
+    barcodeFormatDateddmmyyyy = String.format("0x04", 3062018);
 
-    barcodeFormatTimehhmmss = String.format("0x03",102637);
+    barcodeFormatTimehhmmss = String.format("0x03", 102637);
 
     barcode = "A" + ticketNumber + barcodeFormatDateddmmyyyy + barcodeFormatTimehhmmss;
 
