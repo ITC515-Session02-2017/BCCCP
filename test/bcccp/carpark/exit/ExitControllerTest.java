@@ -82,7 +82,7 @@ class ExitControllerTest {
     sut = new ExitController(carpark, exitGate, insideSensor, outsideSensor, exitUserInterface);
 
     barcodeForAdhocTicket = "Valid Adhoc Ticket";
-    
+
     barcodeForSeasonTicket = "Valid Season Ticket";
 
     when(insideSensor.getId()).thenReturn("Inside Sensor");
