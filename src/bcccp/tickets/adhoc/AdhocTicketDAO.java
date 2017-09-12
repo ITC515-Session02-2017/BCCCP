@@ -26,7 +26,7 @@ public class AdhocTicketDAO implements IAdhocTicketDAO {
   @Override
   public IAdhocTicket createTicket(String carparkId) {
 
-    IAdhocTicket ticket = factory.make(carparkId, currentTicketNo++);
+      IAdhocTicket ticket = factory.make(carparkId, ++currentTicketNo);
 
       list.add(ticket);
 
@@ -42,9 +42,11 @@ public class AdhocTicketDAO implements IAdhocTicketDAO {
 
       while (itr.hasNext()) {
 
-          if (itr.next().getBarcode().equals(barcode)) {
+          IAdhocTicket tkt = itr.next();
 
-              ticket = itr.next();
+          if (tkt.getBarcode().equals(barcode)) {
+
+              ticket = tkt;
 
               break;
           }
