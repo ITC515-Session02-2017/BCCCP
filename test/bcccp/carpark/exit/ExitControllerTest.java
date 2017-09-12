@@ -45,6 +45,15 @@ class ExitControllerTest {
 
   static String barcodeForSeasonTicket;
 
+  private enum STATE {
+    IDLE,
+    WAITING,
+    PROCESSED,
+    REJECTED,
+    TAKEN,
+    EXITING,
+    EXITED,
+    BLOCKED}
 
   @BeforeAll
   static void setupAllTests() {
@@ -64,6 +73,7 @@ class ExitControllerTest {
     seasonTicket = mock(SeasonTicket.class);
 
     adhocTicket = mock(AdhocTicket.class);
+
   }
 
   @BeforeEach
@@ -71,44 +81,13 @@ class ExitControllerTest {
 
     sut = new ExitController(carpark, exitGate, insideSensor, outsideSensor, exitUserInterface);
 
-    // Should initialise STATE but enum is private in sut
+    barcodeForAdhocTicket = "Valid Adhoc Ticket";
+    
+    barcodeForSeasonTicket = "Valid Season Ticket";
 
-    // Following code sets up a formatted barcode for adhoc ticket (Type 'A')
+    when(insideSensor.getId()).thenReturn("Inside Sensor");
 
-    int ticketNum = 203;
-
-    String entryDate = "";
-
-    DateFormat formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
-
-    entryDate = formatter.format(new Date().getTime()); // the string that is encoded (to a bar code)
-
-    String prefix = "0041"; // hex representation of "A". Unicode: U+0041
-
-    String hexNum = Integer.toHexString(ticketNum);
-
-    String hexDate = Long.toHexString(Long.parseLong(entryDate));
-
-    // insert delimiter ":" between hex values
-    barcodeForAdhocTicket = new StringBuilder(prefix + ":").append(hexNum + ":").append(hexDate).toString();
-
-
-    // Following code sets up a formatted barcode for season ticket (Type 'S')
-
-    ticketNum = 465;
-
-    formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
-
-    entryDate = formatter.format(new Date().getTime()); // the string that is encoded (to a bar code)
-
-    prefix = "0053"; // hex representation of "S". Unicode: U+0053
-
-    hexNum = Integer.toHexString(ticketNum);
-
-    hexDate = Long.toHexString(Long.parseLong(entryDate));
-
-    // insert delimiter ":" between hex values
-    barcodeForSeasonTicket = new StringBuilder(prefix + ":").append(hexNum + ":").append(hexDate).toString();
+    when(outsideSensor.getId()).thenReturn("Outside Sensor");
 
   }
 
@@ -153,11 +132,11 @@ class ExitControllerTest {
 
       sut = new ExitController(carpark, exitGate, null, outsideSensor, exitUserInterface);
 
-      fail("Expected: Should throw runtime exception for null as entry gate arg");
+      fail("Expected: Should throw runtime exception for null as inside sensor arg");
 
     } catch (RuntimeException e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor, entry gate arg.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor, inside sensor arg.", e.getMessage());
 
     }
 
@@ -170,11 +149,11 @@ class ExitControllerTest {
 
       sut = new ExitController(carpark, exitGate, insideSensor, null, exitUserInterface);
 
-      fail("Expected: Should throw runtime exception for null as entry gate arg");
+      fail("Expected: Should throw runtime exception for null as outside sensor arg");
 
     } catch (RuntimeException e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor, entry gate arg.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor, outside sensor arg.", e.getMessage());
 
     }
 
@@ -186,11 +165,11 @@ class ExitControllerTest {
     try {
 
       sut = new ExitController(carpark, exitGate, insideSensor, outsideSensor, null);
-      fail("Expected: Should throw runtime exception for null as entry gate arg");
+      fail("Expected: Should throw runtime exception for null as control pillar ui arg");
 
     } catch (RuntimeException e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor, entry gate arg.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor, control pillar ui arg.", e.getMessage());
 
     }
 
@@ -220,7 +199,7 @@ class ExitControllerTest {
   @Test
   void exitControllerInitialisedToIdle() {
 
-    // not possible to get private enum value from sut
+    assertEquals(STATE.IDLE, sut.getState());
 
   }
 
@@ -229,7 +208,8 @@ class ExitControllerTest {
 
     sut.ticketInserted(barcodeForAdhocTicket);
 
-    // not currently possible to get private enum value from sut, but need to validate state = PROCESSED
+    assertTrue((STATE.PROCESSED.equals(sut.getState())) &&
+            (STATE.WAITING.equals(sut.getPrevState())));
 
   }
 
@@ -238,21 +218,172 @@ class ExitControllerTest {
 
     sut.ticketInserted(barcodeForSeasonTicket);
 
-    // not currently possible to get private enum value from sut, but need to validate state = PROCESSED
+    assertTrue((STATE.PROCESSED.equals(sut.getState())) &&
+            (STATE.WAITING.equals(sut.getPrevState())));
 
   }
 
   @Test
-  void ticketTaken() {
+  void ticketInsertedCheckProcessingNotValidTicket() {
 
-    // not possible to get private enum value from sut
+    sut.ticketInserted("Invalid Ticket");
+
+    assertTrue((STATE.REJECTED.equals(sut.getState())) &&
+            (STATE.WAITING.equals(sut.getPrevState())));
 
   }
 
   @Test
-  void carEventDetected() {
+  void ticketTakenProcessed() {
 
-    // not possible to get private enum value from sut
+    sut.ticketTaken();
+
+    assertTrue((STATE.TAKEN.equals(sut.getState())) &&
+            (STATE.PROCESSED.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void ticketTakenRejected() {
+
+    sut.ticketTaken();
+
+    assertTrue((STATE.WAITING.equals(sut.getState())) &&
+            (STATE.REJECTED.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void ticketTakenBeep() {
+
+    sut.ticketTaken();
+
+    verify(exitUserInterface).beep();
+
+    assertFalse((STATE.PROCESSED.equals(sut.getPrevState())) ||
+            (STATE.REJECTED.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void carEventDetectedInsideSensorDetectsCarPresence() {
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue((STATE.IDLE.equals(sut.getState())) &&
+            (STATE.WAITING.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void carEventDetectedOutsideSensorDetectsCarPresence() {
+
+    sut.carEventDetected(outsideSensor.getId(),true);
+
+    assertTrue((STATE.IDLE.equals(sut.getState())) &&
+            (STATE.BLOCKED.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void carEventDetectedInsideSensorDetectsCarAbsenceWhenWaitingFullIssuedOrValidated() {
+
+    // Note the spec for this event is incorrect - ExitController has no STATE for FULL, ISSUED, or VALIDATED
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue(STATE.IDLE.equals(sut.getState()) &&
+            (STATE.WAITING.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void carEventDetectedOutsideSensorDetectsCarAbsenceWhenWaitingFullIssuedOrValidated() {
+
+    // Note the spec for this event is incorrect - ExitController has no STATE for FULL, ISSUED, or VALIDATED
+
+    sut.carEventDetected(outsideSensor.getId(),true);
+
+    assertTrue(STATE.BLOCKED.equals(sut.getState()) &&
+            (STATE.WAITING.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void carEventDetectedInsideSensorDetectsCarAbsenceWhenBlocked() {
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue((STATE.IDLE.equals(sut.getState())) &&
+            (STATE.BLOCKED.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void carEventDetectedOutsideSensorDetectsCarAbsenceWhenBlocked() {
+
+    sut.carEventDetected(outsideSensor.getId(), true);
+
+    assertTrue(STATE.BLOCKED.equals(sut.getPrevState()));
+  }
+
+  @Test
+  void carEventDetectedInsideSensorDetectsCarAbsenceWhenTaken() {
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue((STATE.IDLE.equals(sut.getState())) &&
+              (STATE.TAKEN.equals(sut.getPrevState())));
+
+    }
+
+  @Test
+  void carEventDetectedOutsideSensorDetectsCarAbsenceWhenTaken() {
+
+    sut.carEventDetected(outsideSensor.getId(),true);
+
+    assertTrue((STATE.EXITING.equals(sut.getState())) &&
+            (STATE.TAKEN.equals(sut.getPrevState())));
+
+    }
+
+  @Test
+  void carEventDetectedInsideSensorDetectsCarAbsenceWhenExiting() {
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue((STATE.EXITED.equals(sut.getState())) &&
+            (STATE.EXITING.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void carEventDetectedOutsideSensorDetectsCarAbsenceWhenExiting() {
+
+    sut.carEventDetected(outsideSensor.getId(),true);
+
+    assertTrue((STATE.TAKEN.equals(sut.getState())) &&
+            (STATE.EXITING.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void carEventDetectedInsideSensorDetectsCarAbsenceWhenExited() {
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue((STATE.EXITING.equals(sut.getState())) &&
+            (STATE.EXITED.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void carEventDetectedOutsideSensorDetectsCarAbsenceWhenExited() {
+
+    sut.carEventDetected(outsideSensor.getId(),true);
+
+    assertTrue((STATE.IDLE.equals(sut.getState())) &&
+            (STATE.EXITED.equals(sut.getPrevState())));
 
   }
 

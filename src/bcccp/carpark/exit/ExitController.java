@@ -291,4 +291,12 @@ public class ExitController implements ICarSensorResponder, IExitController {
     private boolean isAdhocTicket(String barcode) {
         return barcode.substring(0, 1).equals("A");
   }
+
+    public STATE getState() {
+        return state;
+    }
+
+    public STATE getPrevState() {
+        return prevState;
+    }
 }

@@ -6,7 +6,7 @@ import javax.xml.bind.DatatypeConverter;
 /**
  * A ticket for casual carpark users.
  */
-public final class AdhocTicket implements IAdhocTicket {
+public class AdhocTicket implements IAdhocTicket {
 
   private String carparkId;
   private int ticketNo;
