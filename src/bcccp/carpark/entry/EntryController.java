@@ -6,6 +6,7 @@ import bcccp.carpark.ICarSensorResponder;
 import bcccp.carpark.ICarpark;
 import bcccp.carpark.ICarparkObserver;
 import bcccp.carpark.IGate;
+import bcccp.carpark.exit.ExitController;
 import bcccp.tickets.adhoc.IAdhocTicket;
 
 public class EntryController implements ICarSensorResponder, ICarparkObserver, IEntryController {
@@ -341,12 +342,12 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
     System.out.println("EntryController : " + message);
   }
 
-  // Following getter method to be removed after testing
   public STATE getState() {
     return state;
-   }
+  }
 
   public STATE getPreviousState() {
     return prevState;
-   }
+  }
+
 }

@@ -15,6 +15,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.MockitoAnnotations;
+import org.mockito.internal.stubbing.BaseStubbing;
+
+import static org.mockito.Mockito.*;
 
 import org.mockito.MockitoAnnotations;
 import static org.mockito.Mockito.*;
@@ -43,6 +49,21 @@ class EntryControllerTest {
 
   static String barcode;
 
+
+  private enum STATE {
+    IDLE,
+    WAITING,
+    FULL,
+    VALIDATED,
+    ISSUED,
+    TAKEN,
+    ENTERING,
+    ENTERED,
+    BLOCKED}
+
+  @Captor
+  private ArgumentCaptor <String> captor;
+
   @BeforeAll
   static void setupAllTests() {
 
@@ -65,16 +86,20 @@ class EntryControllerTest {
   @BeforeEach
   void setupEachTest() {
 
-    sut = new EntryController(carpark,entryGate,outsideSensor,insideSensor, entryUserInterface);
+    when(insideSensor.getId()).thenReturn("Inside Sensor");
 
-    // Should initialise STATE but enum is private in sut
+    when(outsideSensor.getId()).thenReturn("Outside Sensor");
+
+    sut = new EntryController(carpark,entryGate,outsideSensor,insideSensor, entryUserInterface);
 
   }
 
   @AfterEach
   void cleanupEachTest() {
 
-    // Should re-initialise STATE but enum is private in sut
+
+    sut = null;
+
 
   }
 
@@ -194,55 +219,25 @@ class EntryControllerTest {
   @Test
   void entryControllerInitialisedToIdle() {
 
-    // not possible to get private enum value from sut
+
+    // NOTE: this test will not compile when getter method for STATE is removed from EntryController
+    assertEquals(STATE.IDLE, sut.getState());
+
 
   }
 
   @Test
-  void buttonPushedWaitingCarparkFull() {
 
-    // NOTE: Also need to get private enum value from sut (=WAITING)
+  void buttonPushedNotWaiting() {
 
-    Carpark testCarpark = new Carpark("Test Carpark", 3, adhocTicketDAOTest, seasonTicketDAOTest);
+    sut.buttonPushed();
 
-    for (int i = 0; i >= 3; i++) {
-
-      testCarpark.recordAdhocTicketEntry();
-
-    }
-
-    assertTrue(testCarpark.isFull());
-
-  }
-
-  @Test
-  void buttonPushedWaitingCarparkSpaceAvailable() {
-
-    // NOTE: Also need to get private enum value from sut (=WAITING)
-
-    Carpark testCarpark = new Carpark("Test Carpark", 100, adhocTicketDAOTest, seasonTicketDAOTest);
-
-    for (int i = 0; i >= 3; i++) {
-
-      testCarpark.recordAdhocTicketEntry();
-
-    }
-
-    assertFalse(testCarpark.isFull());
-
-  }
-
-  @Test
-  void buttonPushedNotWaitingBeep() {
-
-    // not possible to get private enum value from sut
+    assertNotEquals(STATE.WAITING, sut.getState());
 
   }
 
   @Test
   void ticketInsertedWaitingIsSeasonTicketValidNotInUse() {
-
-    // NOTE: Also need to get private enum value from sut (=WAITING)
 
     barcode = "Test Barcode";
 
@@ -255,28 +250,151 @@ class EntryControllerTest {
   @Test
   void ticketTakenIfIssuedOrValidated() {
 
-    // not possible to get private enum value from sut
+    sut.ticketTaken();
+
+    assertEquals((STATE.ISSUED.equals(sut.getPreviousState())) || (STATE.VALIDATED.equals(sut.getPreviousState())),
+            STATE.TAKEN.equals(sut.getState()));
 
   }
 
   @Test
   void notifyCarparkEventCheckAdhocSpacesAvailable() {
 
-    // not possible to get private enum value from sut
+    sut.notifyCarparkEvent();
+
+    assertTrue((STATE.WAITING.equals(sut.getState())) && !carpark.isFull());
 
   }
 
   @Test
-  void notifyCarparkEventCheckDisplay() {
+  void carEventDetectedOutsideSensorDetectsCarPresenceWhenIdle() {
 
-    // not possible to get private enum value from sut
+    sut.carEventDetected(outsideSensor.getId(),true);
+
+    assertTrue((STATE.WAITING.equals(sut.getState())) && (STATE.IDLE.equals(sut.getPreviousState())));
 
   }
 
   @Test
-  void carEventDetectedIsEventValid() {
+  void carEventDetectedInsideSensorDetectsCarPresenceWhenIdle() {
 
-    // not possible to get private enum value from sut
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue(STATE.BLOCKED.equals(sut.getState()) && (STATE.IDLE.equals(sut.getPreviousState())));
+
+  }
+
+  @Test
+  void carEventDetectedOutsideSensorDetectsCarAbsenceWhenWaitingFullIssuedOrValidated() {
+
+    boolean multiState = false;
+
+    if (STATE.WAITING.equals(sut.getPreviousState()) || STATE.FULL.equals(sut.getPreviousState()) ||
+            STATE.ISSUED.equals(sut.getPreviousState()) || STATE.VALIDATED.equals(sut.getPreviousState())) {
+
+      multiState = true;
+
+    }
+
+    sut.carEventDetected(outsideSensor.getId(),false);
+
+    assertTrue(STATE.IDLE.equals(sut.getState()) && multiState);
+
+  }
+
+  @Test
+
+  void carEventDetectedInsideSensorDetectsCarAbsenceWhenWaitingFullIssuedOrValidated() {
+
+    boolean multiState = false;
+
+    if (STATE.WAITING.equals(sut.getState()) || STATE.FULL.equals(sut.getState()) ||
+            STATE.ISSUED.equals(sut.getState()) || STATE.VALIDATED.equals(sut.getState())) {
+
+      multiState = true;
+
+    }
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue(STATE.BLOCKED.equals(sut.getState()) && !multiState);
+
+  }
+  @Test
+  void carEventDetectedOutsideSensorDetectsCarPresenceWhenBlocked() {
+
+    sut.carEventDetected(outsideSensor.getId(),true);
+
+    assertTrue((STATE.IDLE.equals(sut.getState())) && (STATE.BLOCKED.equals(sut.getPreviousState())));
+
+  }
+
+  @Test
+
+  void carEventDetectedInsideSensorDetectsCarPresenceWhenBlocked() {
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue(STATE.BLOCKED.equals(sut.getState()));
+
+  }
+
+  @Test
+
+  void carEventDetectedOutsideSensorDetectsCarPresenceWhenTicketTaken() {
+
+    sut.carEventDetected(outsideSensor.getId(),true);
+
+    assertTrue((STATE.IDLE.equals(sut.getState())) && (STATE.TAKEN.equals(sut.getPreviousState())));
+
+  }
+
+  @Test
+  void carEventDetectedInsideSensorDetectsCarPresenceWhenTicketTaken() {
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue(STATE.ENTERING.equals(sut.getState()) && (STATE.TAKEN.equals(sut.getPreviousState())));
+
+  }
+
+  @Test
+
+  void carEventDetectedOutsideSensorDetectsCarPresenceWhenEntering() {
+
+    sut.carEventDetected(outsideSensor.getId(),true);
+
+    assertTrue((STATE.ENTERED.equals(sut.getState())) && (STATE.ENTERING.equals(sut.getPreviousState())));
+
+  }
+
+  @Test
+
+  void carEventDetectedInsideSensorDetectsCarPresenceWhenEntering() {
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue(STATE.TAKEN.equals(sut.getState()) && (STATE.ENTERING.equals(sut.getPreviousState())));
+
+  }
+
+  @Test
+
+  void carEventDetectedOutsideSensorDetectsCarPresenceWhenEntered() {
+
+    sut.carEventDetected(outsideSensor.getId(),true);
+
+    assertTrue((STATE.ENTERING.equals(sut.getState())) && (STATE.ENTERED.equals(sut.getPreviousState())));
+
+  }
+
+  @Test
+
+  void carEventDetectedInsideSensorDetectsCarPresenceWhenEntered() {
+
+    sut.carEventDetected(insideSensor.getId(),true);
+
+    assertTrue(STATE.IDLE.equals(sut.getState()) && (STATE.ENTERED.equals(sut.getPreviousState())));
 
   }
 

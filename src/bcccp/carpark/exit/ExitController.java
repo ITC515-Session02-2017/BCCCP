@@ -292,8 +292,12 @@ public class ExitController implements ICarSensorResponder, IExitController {
         return barcode.substring(0, 1).equals("A");
   }
 
-    // Following getter method to be removed after testing
     public STATE getState() {
         return state;
     }
+
+    public STATE getPrevState() {
+        return prevState;
+    }
+
 }
