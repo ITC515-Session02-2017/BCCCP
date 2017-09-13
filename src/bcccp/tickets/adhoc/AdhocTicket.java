@@ -20,6 +20,7 @@ public class AdhocTicket implements IAdhocTicket {
     private float charge;
     private String barcode;
     private STATE state;
+    private String regex = "\\d{8}";
 
     private enum STATE {
         ISSUED,
@@ -75,9 +76,12 @@ public class AdhocTicket implements IAdhocTicket {
     @Override
     public void enter(long dateTime) {
 
+
         entryDateTime = dateTime;
 
         state = STATE.CURRENT;
+
+
     }
 
     @Override
@@ -209,5 +213,6 @@ public class AdhocTicket implements IAdhocTicket {
                         Integer.parseInt(entryDate.substring(12)))
                         .getTime();
     }
+
 
 }

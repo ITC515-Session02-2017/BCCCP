@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 
 import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.xml.bind.DatatypeConverter;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.text.DateFormat;
@@ -313,7 +315,7 @@ class CarparkTest {
         }
 
 
-        IAdhocTicket ticket = new AdhocTicket(testItem.getName(), 1, entryStrDate);
+        IAdhocTicket ticket = new AdhocTicket(testItem.getName(), 1, generateBarCode(1, entryStrDate));
 
         SimpleDateFormat ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 
@@ -353,7 +355,7 @@ class CarparkTest {
             e.printStackTrace();
         }
 
-        ticket = new AdhocTicket(testItem.getName(), 2, entryStrDate);
+        ticket = new AdhocTicket(testItem.getName(), 2, generateBarCode(2, entryStrDate));
 
         ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 
@@ -395,7 +397,7 @@ class CarparkTest {
             e.printStackTrace();
         }
 
-        ticket = new AdhocTicket(testItem.getName(), 3, entryStrDate);
+        ticket = new AdhocTicket(testItem.getName(), 3, generateBarCode(3, entryStrDate));
 
         ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 
@@ -549,5 +551,28 @@ class CarparkTest {
 
         verify(seasonTicketDAO).recordTicketExit(tkt.getId());
 
+    }
+
+    public String generateBarCode(int ticketNum, String entryDate) {
+
+        String prefix = "0041"; // hex representation of "A". Unicode: U+0041
+
+        String hexNum = Integer.toHexString(ticketNum);
+
+        String hexDate = null;
+        try {
+            hexDate = toHexadecimal(entryDate);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return prefix + "\u002D" + hexNum + "\u002D" + hexDate;
+    }
+
+
+    public static String toHexadecimal(String text) throws UnsupportedEncodingException {
+        byte[] myBytes = text.getBytes("UTF-16");
+
+        return DatatypeConverter.printHexBinary(myBytes);
     }
 }
