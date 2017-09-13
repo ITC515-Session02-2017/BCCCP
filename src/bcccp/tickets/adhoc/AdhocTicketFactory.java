@@ -24,7 +24,7 @@ public class AdhocTicketFactory implements IAdhocTicketFactory {
      *
      * @return String
      */
-    private String entryDate() {
+    public String entryDate() {
 
         // Display a date in day, month, year format
         DateFormat formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
@@ -32,7 +32,7 @@ public class AdhocTicketFactory implements IAdhocTicketFactory {
         return formatter.format(new Date().getTime()); // the string that is encoded (to a bar code)
     }
 
-    private String generateBarCode(int ticketNum, String entryDate) {
+    public String generateBarCode(int ticketNum, String entryDate) {
 
         String prefix = "0041"; // hex representation of "A". Unicode: U+0041
 
@@ -48,7 +48,7 @@ public class AdhocTicketFactory implements IAdhocTicketFactory {
         return prefix + "\u002D" + hexNum + "\u002D" + hexDate;
     }
 
-    private static String toHexadecimal(String text) throws UnsupportedEncodingException {
+    public static String toHexadecimal(String text) throws UnsupportedEncodingException {
         byte[] myBytes = text.getBytes("UTF-16");
 
         return DatatypeConverter.printHexBinary(myBytes);
