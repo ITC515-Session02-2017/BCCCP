@@ -10,8 +10,6 @@ import javax.xml.bind.DatatypeConverter;
  * A ticket for casual carpark users.
  */
 public class AdhocTicket implements IAdhocTicket {
-<<<<<<< HEAD
-=======
 
 
     private String carparkId;
@@ -29,7 +27,6 @@ public class AdhocTicket implements IAdhocTicket {
         PAID,
         EXITED
     }
->>>>>>> master
 
     /**
      * A ticket for casual carpark clients.
