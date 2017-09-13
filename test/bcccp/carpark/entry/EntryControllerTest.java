@@ -22,6 +22,9 @@ import org.mockito.internal.stubbing.BaseStubbing;
 
 import static org.mockito.Mockito.*;
 
+import org.mockito.MockitoAnnotations;
+import static org.mockito.Mockito.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class EntryControllerTest {
@@ -45,6 +48,7 @@ class EntryControllerTest {
   static SeasonTicket seasonTicket;
 
   static String barcode;
+
 
   private enum STATE {
     IDLE,
@@ -93,7 +97,9 @@ class EntryControllerTest {
   @AfterEach
   void cleanupEachTest() {
 
+
     sut = null;
+
 
   }
 
@@ -213,12 +219,15 @@ class EntryControllerTest {
   @Test
   void entryControllerInitialisedToIdle() {
 
+
     // NOTE: this test will not compile when getter method for STATE is removed from EntryController
     assertEquals(STATE.IDLE, sut.getState());
+
 
   }
 
   @Test
+
   void buttonPushedNotWaiting() {
 
     sut.buttonPushed();
@@ -294,6 +303,7 @@ class EntryControllerTest {
   }
 
   @Test
+
   void carEventDetectedInsideSensorDetectsCarAbsenceWhenWaitingFullIssuedOrValidated() {
 
     boolean multiState = false;
@@ -320,6 +330,7 @@ class EntryControllerTest {
   }
 
   @Test
+
   void carEventDetectedInsideSensorDetectsCarPresenceWhenBlocked() {
 
     sut.carEventDetected(insideSensor.getId(),true);
@@ -329,6 +340,7 @@ class EntryControllerTest {
   }
 
   @Test
+
   void carEventDetectedOutsideSensorDetectsCarPresenceWhenTicketTaken() {
 
     sut.carEventDetected(outsideSensor.getId(),true);
@@ -347,6 +359,7 @@ class EntryControllerTest {
   }
 
   @Test
+
   void carEventDetectedOutsideSensorDetectsCarPresenceWhenEntering() {
 
     sut.carEventDetected(outsideSensor.getId(),true);
@@ -356,6 +369,7 @@ class EntryControllerTest {
   }
 
   @Test
+
   void carEventDetectedInsideSensorDetectsCarPresenceWhenEntering() {
 
     sut.carEventDetected(insideSensor.getId(),true);
@@ -365,6 +379,7 @@ class EntryControllerTest {
   }
 
   @Test
+
   void carEventDetectedOutsideSensorDetectsCarPresenceWhenEntered() {
 
     sut.carEventDetected(outsideSensor.getId(),true);
@@ -374,6 +389,7 @@ class EntryControllerTest {
   }
 
   @Test
+
   void carEventDetectedInsideSensorDetectsCarPresenceWhenEntered() {
 
     sut.carEventDetected(insideSensor.getId(),true);

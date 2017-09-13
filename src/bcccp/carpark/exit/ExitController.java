@@ -299,4 +299,5 @@ public class ExitController implements ICarSensorResponder, IExitController {
     public STATE getPrevState() {
         return prevState;
     }
+
 }
