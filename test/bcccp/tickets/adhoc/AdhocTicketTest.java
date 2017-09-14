@@ -92,11 +92,13 @@ class AdhocTicketTest {
     }
 
     @Test
-    void testisCurrentState() {
+    void testIsCurrentMethod(){
         logger.log(Level.INFO,"Testing the state of isCurrentState method");
-        testAdhoc.enter(0L);
-        boolean state = testAdhoc.isCurrent();
-        assertFalse(state);
+        AdhocTicketFactory f = new AdhocTicketFactory();
+        IAdhocTicket t = f.make("123",123);
+        t.enter(1L);
+        assertTrue(t.isCurrent());
+
     }
 
     @Test
