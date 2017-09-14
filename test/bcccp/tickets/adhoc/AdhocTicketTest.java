@@ -1,14 +1,11 @@
 package bcccp.tickets.adhoc;
 
-
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
-import java.util.List;
+import javax.xml.bind.DatatypeConverter;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,89 +22,97 @@ class AdhocTicketTest {
     private float charge;
 
     @BeforeAll
-    static void before(){
+    static void before() {
         testAdhoc = mock(AdhocTicket.class);
         idao = spy(new AdhocTicketDAO(new AdhocTicketFactory()));
     }
 
+    @AfterEach
+    void after() {
+
+        testAdhoc = mock(AdhocTicket.class);
+        idao = spy(new AdhocTicketDAO(new AdhocTicketFactory()));
+
+    }
+
     @Test
     void testRuntimeExceptioWhenGetInvalidTicketNo() {
-        logger.log(Level.INFO,"Testing ticket number");
+        logger.log(Level.INFO, "Testing ticket number");
         testAdhoc.getTicketNo();
-        Throwable exception = assertThrows(RuntimeException.class,() -> {
+        Throwable exception = assertThrows(RuntimeException.class, () -> {
             throw new RuntimeException("Error");
         });
-        assertEquals("Error",exception.getMessage());
+        assertEquals("Error", exception.getMessage());
 
-   }
+    }
 
     @Test
     void testgetBarcode() {
-        logger.log(Level.INFO,"Test getBarcode method");
+        logger.log(Level.INFO, "Test getBarcode method");
         testAdhoc.getBarcode();
-        Throwable exception = assertThrows(RuntimeException.class,() -> {
+        Throwable exception = assertThrows(RuntimeException.class, () -> {
             throw new RuntimeException("Error");
         });
-        assertEquals("Error",exception.getMessage());
+        assertEquals("Error", exception.getMessage());
     }
 
-    
 
     @Test
     void testgetCarparkIdwithInvalid() {
-        logger.log(Level.INFO,"Test getCarparkId method with invalid parameter");
+        logger.log(Level.INFO, "Test getCarparkId method with invalid parameter");
         testAdhoc.getCarparkId();
-        Throwable exception = assertThrows(RuntimeException.class,() -> {
+        Throwable exception = assertThrows(RuntimeException.class, () -> {
             throw new RuntimeException("Error");
         });
-        assertEquals("Error",exception.getMessage());
+        assertEquals("Error", exception.getMessage());
     }
 
     @Test
     void testenterEntryDate() {
-        logger.log(Level.INFO,"Test EntryDate");
+        logger.log(Level.INFO, "Test EntryDate");
         testAdhoc.enter(0L);
         verify(testAdhoc).enter(0L);
-        assertEquals(testAdhoc.getEntryDateTime(),0L);
+        assertEquals(testAdhoc.getEntryDateTime(), 0L);
 
     }
 
     @Test
     void getEntryDateTime() {
-        logger.log(Level.INFO,"Test entry day");
+        logger.log(Level.INFO, "Test entry day");
         when(testAdhoc.getEntryDateTime()).thenReturn(0L);
-        assertEquals(0L,testAdhoc.getEntryDateTime());
+        assertEquals(0L, testAdhoc.getEntryDateTime());
 
     }
 
     @Test
-    void testExceptionforinvalidDateEnterMethod(){
-        logger.log(Level.INFO,"Test exceptions when invalid date entry is entered");
+    void testExceptionforinvalidDateEnterMethod() {
+        logger.log(Level.INFO, "Test exceptions when invalid date entry is entered");
         testAdhoc.enter(0);
-        Throwable exception = assertThrows(RuntimeException.class,() -> {
+        Throwable exception = assertThrows(RuntimeException.class, () -> {
             throw new RuntimeException("Error");
         });
-        assertEquals("Error",exception.getMessage());
+        assertEquals("Error", exception.getMessage());
 
     }
 
     @Test
-    void testIsCurrentMethod(){
-        logger.log(Level.INFO,"Testing the state of isCurrentState method");
-        AdhocTicketFactory f = new AdhocTicketFactory();
-        IAdhocTicket t = f.make("123",123);
-        t.enter(1L);
-        assertTrue(t.isCurrent());
 
+    void testisCurrentState() {
+        logger.log(Level.INFO, "Testing the state of isCurrentState method");
+        String entryStrDate = "02042013053542"; // "02-04-2013 05:35:42"
+        testAdhoc = new AdhocTicket("Flinders Lane", 34, generateBarCode(34, entryStrDate));
+        testAdhoc.enter(testAdhoc.getEntryDateTime());
+        boolean state = testAdhoc.isCurrent();
+        assertTrue(state);
     }
 
     @Test
     void testpayParameters() {
-        logger.log(Level.INFO,"Testing pay method parameters");
+        logger.log(Level.INFO, "Testing pay method parameters");
         when(testAdhoc.getCharge()).thenReturn(4.5F);
         when(testAdhoc.getPaidDateTime()).thenReturn(4L);
-        assertEquals(4.5F,testAdhoc.getCharge());
-        assertEquals(4L,testAdhoc.getPaidDateTime());
+        assertEquals(4.5F, testAdhoc.getCharge());
+        assertEquals(4L, testAdhoc.getPaidDateTime());
 
 
     }
@@ -115,38 +120,64 @@ class AdhocTicketTest {
 
     @Test
     void isPaid() {
-        logger.log(Level.INFO,"Test isPaid method");
+        logger.log(Level.INFO, "Test isPaid method");
         when(testAdhoc.isCurrent()).thenReturn(true);
-        assertEquals(true,testAdhoc.isCurrent());
+        assertEquals(true, testAdhoc.isCurrent());
 
     }
 
     @Test
     void getCharge() {
-        logger.log(Level.INFO,"Test getCharge method");
+        logger.log(Level.INFO, "Test getCharge method");
         when(testAdhoc.getCharge()).thenReturn(4.5F);
-        assertEquals(4.5F,testAdhoc.getCharge());
+        assertEquals(4.5F, testAdhoc.getCharge());
     }
 
     @Test
     void testExitMethod() {
-        logger.log(Level.INFO,"Test exit method");
+        logger.log(Level.INFO, "Test exit method");
         testAdhoc.exit(5L);
         verify(testAdhoc).exit(5L);
     }
 
     @Test
     void getExitDateTime() {
-        logger.log(Level.INFO,"Test Exit method");
+        logger.log(Level.INFO, "Test Exit method");
         when(testAdhoc.getExitDateTime()).thenReturn(5L);
-        assertEquals(5L,testAdhoc.getExitDateTime());
+        assertEquals(5L, testAdhoc.getExitDateTime());
     }
 
     @Test
     void testhasExitedMethod() {
-        logger.log(Level.INFO,"Test hasExit method");
+        logger.log(Level.INFO, "Test hasExit method");
         when(testAdhoc.hasExited()).thenReturn(true);
         assertTrue(testAdhoc.hasExited());
     }
+
+    // support methods
+
+    static String generateBarCode(int ticketNum, String entryDate) {
+
+        String prefix = "0041"; // hex representation of "A". Unicode: U+0041
+
+        String hexNum = Integer.toHexString(ticketNum);
+
+        String hexDate = null;
+        try {
+            hexDate = toHexadecimal(entryDate);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return prefix + "\u002D" + hexNum + "\u002D" + hexDate;
+    }
+
+
+    static String toHexadecimal(String text) throws UnsupportedEncodingException {
+        byte[] myBytes = text.getBytes("UTF-16");
+
+        return DatatypeConverter.printHexBinary(myBytes);
+    }
+
 
 }
