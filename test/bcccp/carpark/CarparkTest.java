@@ -1,35 +1,28 @@
 package bcccp.carpark;
 
 import bcccp.carpark.entry.EntryController;
-import bcccp.carpark.entry.EntryUI;
 import bcccp.tickets.adhoc.*;
 import bcccp.tickets.season.*;
-
-import org.junit.jupiter.api.AfterAll;
-
 import org.junit.jupiter.api.AfterEach;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.junit.MockitoJUnitRunner;
-
 import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 //RunWith(MockitoJUnitRunner.class)
-class CarparkTest {
+public class CarparkTest {
 
     static IAdhocTicketDAO adhocTicketDAO;
 
@@ -60,7 +53,6 @@ class CarparkTest {
         entryController = mock(EntryController.class);
 
     }
-
 
 
     @AfterEach
@@ -419,8 +411,7 @@ class CarparkTest {
     @Test
     /**
      * registers a season ticket with the carpark so that the season ticket may be used to access the
-     * carpark throws a RuntimeException if the carpark the season ticket is associated is not the
-     * same as the carpark name.
+     * carpark.
      */
     void registerSeasonTicket() {
 
@@ -436,6 +427,15 @@ class CarparkTest {
         assertEquals(true, testItem.isSeasonTicketInUse("S2222"));
 
 
+    }
+
+    /**
+     * Throws a RuntimeException if the carpark the season ticket is associated is not the
+     * same as the carpark name.
+     */
+    @Test
+    void registerSeasonTicketRuntimeExceptionTest() {
+
         try {
 
             testItem.registerSeasonTicket(new SeasonTicket("S9999", "Wrong Name", 0L, 0L));
@@ -446,6 +446,7 @@ class CarparkTest {
 
             assertEquals("Wrong carpark!", e.getMessage());
         }
+
     }
 
 
@@ -494,9 +495,7 @@ class CarparkTest {
 
     @Test
     /**
-     * causes a new usage record to be created and associated with a season ticket Throws a
-     * RuntimeException if the season ticket associated with ticketId does not exist, or is currently
-     * in use
+     * causes a new usage record to be created and associated with a season ticket.
      */
     void recordSeasonTicketEntry() {
 
@@ -513,6 +512,16 @@ class CarparkTest {
 
         verify(seasonTicketDAO).recordTicketEntry("S2222");
 
+
+    }
+
+    /**
+     * Throws a
+     * RuntimeException if the season ticket associated with ticketId does not exist, or is currently
+     * in use
+     */
+    @Test
+    void recordSeasonTicketEntryRuntimeExceptionTest() {
 
         try {
             //no ticket has the following id:
@@ -553,7 +562,10 @@ class CarparkTest {
 
     }
 
-    public String generateBarCode(int ticketNum, String entryDate) {
+    /**
+     * utility for generating the barcode (from adhocTicket class)
+     */
+    private String generateBarCode(int ticketNum, String entryDate) {
 
         String prefix = "0041"; // hex representation of "A". Unicode: U+0041
 
@@ -570,7 +582,7 @@ class CarparkTest {
     }
 
 
-    public static String toHexadecimal(String text) throws UnsupportedEncodingException {
+    private static String toHexadecimal(String text) throws UnsupportedEncodingException {
         byte[] myBytes = text.getBytes("UTF-16");
 
         return DatatypeConverter.printHexBinary(myBytes);
