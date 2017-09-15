@@ -4,7 +4,7 @@ Required (for testing): Inside the /lib folder place the desired mockito and jun
 be sure to add the content of the folder to the classpath.
  
 Please note that different versions of intellij work best with particular versions of junit, etc.
-
+See: http://junit.org/junit5/docs/current/user-guide/
 The following files worked with intellij 2017.2.1 
 
 /lib/byte-buddy-1.5.5.jar
