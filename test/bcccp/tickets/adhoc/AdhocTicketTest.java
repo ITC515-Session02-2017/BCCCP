@@ -96,6 +96,7 @@ class AdhocTicketTest {
     }
 
     @Test
+
     void testisCurrentState() {
         logger.log(Level.INFO, "Testing the state of isCurrentState method");
         String entryStrDate = "02042013053542"; // "02-04-2013 05:35:42"
