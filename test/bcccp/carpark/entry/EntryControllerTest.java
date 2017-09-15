@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class EntryControllerTest {
+public class EntryControllerTest {
 
   static Carpark carpark;
 

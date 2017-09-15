@@ -13,7 +13,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class SeasonTicketTest {
+public class SeasonTicketTest {
 
   static UsageRecordFactory usageRecordFactory;
 
