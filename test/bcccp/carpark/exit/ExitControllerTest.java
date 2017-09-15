@@ -21,7 +21,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-class ExitControllerTest {
+public class ExitControllerTest {
 
   static Carpark carpark;
 
