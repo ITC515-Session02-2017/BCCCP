@@ -56,3 +56,5 @@ fabric.properties
 /lib/mockito-core-2.3.3.jar
 /lib/objenesis-2.4.jar
 /lib/opentest4j-1.0.0-M2.jar
+/lib/
+/.idea/
