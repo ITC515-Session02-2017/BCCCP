@@ -65,9 +65,9 @@ public class SeasonTicketDAO implements ISeasonTicketDAO {
 
     while (sTicketRecs.hasNext()) {
 
-      if (sTicketRecs.next().getId().equals(ticketId)) {
+      sTicket = sTicketRecs.next();
 
-        sTicket = sTicketRecs.next();
+      if (sTicket.getId().equals(ticketId)) {
 
         break;
 
@@ -90,6 +90,7 @@ public class SeasonTicketDAO implements ISeasonTicketDAO {
     IUsageRecord usageRecord = factory.make(ticketId, dateTime.getTime());
 
     findTicketById(ticketId).recordUsage(usageRecord);
+
   }
 
   @Override

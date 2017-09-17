@@ -2,6 +2,7 @@ package bcccp.carpark.paystation;
 
 import bcccp.carpark.ICarpark;
 import bcccp.tickets.adhoc.IAdhocTicket;
+import bcccp.carpark.CalcAdhocTicketCharge;
 
 public class PaystationController implements IPaystationController {
 
@@ -23,7 +24,7 @@ public class PaystationController implements IPaystationController {
   public void ticketInserted(String barcode) {
 
     if (carpark.getAdhocTicket(barcode).getEntryDateTime() == adhocTicket.getEntryDateTime()) {
-      charge = carpark.calculateAddHocTicketCharge(adhocTicket.getEntryDateTime());
+      charge = CalcAdhocTicketCharge.calculateAddHocTicketCharge(adhocTicket.getEntryDateTime());
       ui.display("AU " + charge);
 
     } else {
