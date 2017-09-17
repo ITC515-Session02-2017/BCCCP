@@ -14,6 +14,8 @@ public abstract class CalcAdhocTicketCharge {
 
   static final BigDecimal END_BUS_HOURS = new BigDecimal(19.0); // uses 24-hour clock
 
+  static final BigDecimal HOURS_CONVERTER = new BigDecimal(1000 * 60 * 60); // used to convert milliseconds to hours
+
   // These constants are used in place of enum due to the need to compare against int values.
   static final int SUNDAY = 0;
   static final int MONDAY = 1;
@@ -22,6 +24,8 @@ public abstract class CalcAdhocTicketCharge {
   static final int THURSDAY = 4;
   static final int FRIDAY = 5;
   static final int SATURDAY = 6;
+
+
 
   static BigDecimal totalCharge = new BigDecimal(0.0);
 
@@ -65,19 +69,19 @@ public abstract class CalcAdhocTicketCharge {
 
     currentDateTime.setTimeInMillis(eTime);
 
-    int startDay = startDateTime.get(Calendar.DAY_OF_YEAR);
+    int startDay = startDateTime.get(Calendar.DAY_OF_MONTH);
 
-    int startHour = startDateTime.get(Calendar.HOUR_OF_DAY);
+    int startDayOfWeek;
 
-    int startDayOfWeek = startDateTime.get(Calendar.DAY_OF_WEEK);
+    long startTime = startDateTime.getTimeInMillis();
 
     int endDay = currentDateTime.get(Calendar.DAY_OF_YEAR);
 
-    int endHour = currentDateTime.get(Calendar.HOUR_OF_DAY);
-
     int endDayOfWeek = currentDateTime.get(Calendar.DAY_OF_WEEK);
 
-    final int MIDNIGHT = 00;
+    long endTime = currentDateTime.getTimeInMillis();
+
+    long midnight;
 
     // The while loop calculates the charge for each day prior to the end day by
     // calling method calcDayCharge. It increments the day of the year until it reaches
@@ -85,20 +89,42 @@ public abstract class CalcAdhocTicketCharge {
 
     while (startDay != endDay) {
 
-      charge = charge.add(calcDayCharge(startHour, MIDNIGHT, startDayOfWeek));
+      // to find midnight of the starting day, get values for year, month, day
+      // and then set the time in milliseconds to year, month, day and 59 minutes, 59 seconds.
 
-      startHour = 0;
-
-      startDay++;
-
-      startDateTime.set(Calendar.DAY_OF_YEAR, startDay);
+      startDay = startDateTime.get(Calendar.DAY_OF_MONTH);
 
       startDayOfWeek = startDateTime.get(Calendar.DAY_OF_WEEK);
 
+      startTime = startDateTime.getTimeInMillis();
+
+      // Set the end time of the current day to midnight (23:59:59)
+
+      startDateTime.set(Calendar.HOUR_OF_DAY, 23);
+
+      startDateTime.set(Calendar.MINUTE, 59);
+
+      startDateTime.set(Calendar.SECOND, 59);
+
+      midnight = startDateTime.getTimeInMillis();
+
+      charge = charge.add(calcDayCharge(startTime, midnight, startDayOfWeek));
+
+      startDateTime.add(Calendar.DAY_OF_YEAR, 1); // increment to next day
+
+      // Set the start time of next day to 00:00:00 hours, minutes, seconds
+
+      startDateTime.set(Calendar.HOUR_OF_DAY, 0);
+
+      startDateTime.set(Calendar.MINUTE, 0);
+
+      startDateTime.set(Calendar.SECOND, 0);
+
     }
 
-    // last day is calculated from start of the day until the last hour.
-    charge = charge.add(calcDayCharge(startHour, endHour, endDayOfWeek));
+    // last day is calculated from start of the day until the end time.
+
+    charge = charge.add(calcDayCharge(startTime, endTime, endDayOfWeek));
 
     return charge;
   }
@@ -107,18 +133,42 @@ public abstract class CalcAdhocTicketCharge {
    * Description: This method calculates the charge for a single day of a car's stay. It is
    * called by calcCharge method for each day included in the car's total stay.
    *
-   * @param sHour start time of this day of car's stay in carpark
-   * @param eHour end time of this day of car's stay in carpark
+   * @param sTime start time of this day of car's stay in carpark in milliseconds
+   * @param eTime end time of this day of car's stay in carpark in milliseconds
    * @param dayOfWeek number of this day of the week (0 = Sunday, etc.)
-   * @return returns the charge calculated for this day
+   * @return returns the charge calculated for this day in currency $.cc (BigDecimal)
    */
-  public static BigDecimal calcDayCharge (int sHour, int eHour, int dayOfWeek) {
+  public static BigDecimal calcDayCharge (long sTime, long eTime, int dayOfWeek) {
+
+    BigDecimal decimalSTime = new BigDecimal(sTime);
+
+    BigDecimal decimalETime = new BigDecimal(eTime);
 
     BigDecimal dayCharge = new BigDecimal(0.0);
 
-    BigDecimal decimalSHour = new BigDecimal((sHour));
+    // Put start of business hours into milliseconds format
 
-    BigDecimal decimalEHour = new BigDecimal((eHour));
+    Calendar startBusHours = Calendar.getInstance();
+
+    startBusHours.setTimeInMillis(sTime);
+
+    startBusHours.set(Calendar.HOUR_OF_DAY, START_BUS_HOURS.intValue());
+
+    long sBusHours = startBusHours.getTimeInMillis();
+
+    BigDecimal decimalSBusHours = new BigDecimal(sBusHours);
+
+    // Put end of business hours into milliseconds format
+
+    Calendar endBusHours = Calendar.getInstance();
+
+    endBusHours.setTimeInMillis(eTime);
+
+    endBusHours.set(Calendar.HOUR_OF_DAY, END_BUS_HOURS.intValue());
+
+    long eBusHours = endBusHours.getTimeInMillis();
+
+    BigDecimal decimalEBusHours = new BigDecimal(eBusHours);
 
     boolean isBusinessDay = true;
 
@@ -134,38 +184,38 @@ public abstract class CalcAdhocTicketCharge {
 
     if (isBusinessDay) {
 
-      if (eHour <= START_BUS_HOURS.intValue()) {
+      if (sTime <= sBusHours) {
 
-        dayCharge = (decimalEHour.subtract(decimalSHour)).multiply(OUT_OF_HOURS_RATE);
+        dayCharge = (decimalETime.subtract(decimalSTime)).multiply(OUT_OF_HOURS_RATE);
 
-      } else if (sHour >= END_BUS_HOURS.intValue()) {
+      } else if (sTime >= eBusHours) {
 
-        dayCharge = (decimalEHour.subtract(decimalSHour)).multiply(OUT_OF_HOURS_RATE);
+        dayCharge = (decimalETime.subtract(decimalSTime)).multiply(OUT_OF_HOURS_RATE);
 
-      } else if (sHour >= START_BUS_HOURS.intValue() && eHour <= END_BUS_HOURS.intValue()) {
+      } else if (sTime >= sBusHours && eTime <= eBusHours) {
 
-        dayCharge = (decimalEHour.subtract(decimalSHour)).multiply(BUSINESS_HOURS_RATE);
+        dayCharge = (decimalETime.subtract(decimalSTime)).multiply(BUSINESS_HOURS_RATE);
 
-      } else if (sHour < START_BUS_HOURS.intValue() && eHour <= END_BUS_HOURS.intValue()) {
+      } else if (sTime < sBusHours && eTime <= eBusHours) {
 
-        dayCharge = (START_BUS_HOURS.subtract(decimalSHour)).multiply(OUT_OF_HOURS_RATE);
+        dayCharge = (decimalSBusHours.subtract(decimalSTime)).multiply(OUT_OF_HOURS_RATE);
 
-        dayCharge = (dayCharge.add(decimalEHour.subtract(END_BUS_HOURS))).multiply(BUSINESS_HOURS_RATE);
+        dayCharge = ((dayCharge.add(decimalETime)).subtract(decimalEBusHours)).multiply(BUSINESS_HOURS_RATE);
 
-      } else if (sHour >= START_BUS_HOURS.intValue() && sHour < END_BUS_HOURS.intValue() &&
-              eHour > END_BUS_HOURS.intValue()) {
+      } else if (sTime >= sBusHours && sTime < eBusHours &&
+              eTime > eBusHours) {
 
-        dayCharge = (END_BUS_HOURS.subtract(decimalSHour)).multiply(BUSINESS_HOURS_RATE);
+        dayCharge = (decimalEBusHours.subtract(decimalSTime)).multiply(BUSINESS_HOURS_RATE);
 
-        dayCharge = (dayCharge.add(decimalEHour.subtract(END_BUS_HOURS))).multiply(OUT_OF_HOURS_RATE);
+        dayCharge = ((dayCharge.add(decimalETime)).subtract(decimalEBusHours)).multiply(OUT_OF_HOURS_RATE);
 
-      } else if (sHour < START_BUS_HOURS.intValue() && eHour > END_BUS_HOURS.intValue()) {
+      } else if (sTime < sBusHours && eTime > eBusHours) {
 
-        dayCharge = (START_BUS_HOURS.subtract(decimalSHour)).multiply(OUT_OF_HOURS_RATE);
+        dayCharge = (decimalSBusHours.subtract(decimalSTime)).multiply(OUT_OF_HOURS_RATE);
 
-        dayCharge = (dayCharge.add(END_BUS_HOURS.subtract(START_BUS_HOURS))).multiply(BUSINESS_HOURS_RATE);
+        dayCharge = ((dayCharge.add(decimalEBusHours).subtract(decimalSBusHours))).multiply(BUSINESS_HOURS_RATE);
 
-        dayCharge = (dayCharge.add(decimalEHour.subtract(END_BUS_HOURS))).multiply(OUT_OF_HOURS_RATE);
+        dayCharge = ((dayCharge.add(decimalETime).subtract(decimalEBusHours))).multiply(OUT_OF_HOURS_RATE);
 
       } else {
 
@@ -175,11 +225,11 @@ public abstract class CalcAdhocTicketCharge {
 
     } else { // not a business day
 
-      dayCharge = (decimalEHour.subtract(decimalSHour)).multiply(OUT_OF_HOURS_RATE);
+      dayCharge = (decimalETime.subtract(decimalSTime)).multiply(OUT_OF_HOURS_RATE);
 
       }
 
-    return dayCharge;
+    return dayCharge.divide(HOURS_CONVERTER);
   }
 
 }
