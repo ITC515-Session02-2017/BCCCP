@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class AdhocTicketTest {
+public class AdhocTicketTest {
 
     static IAdhocTicket testAdhoc;
     static IAdhocTicketDAO idao;
