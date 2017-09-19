@@ -1,6 +1,7 @@
 package bcccp.carpark;
 
 import bcccp.carpark.entry.EntryController;
+import bcccp.carpark.exit.ExitController;
 import bcccp.tickets.adhoc.*;
 import bcccp.tickets.season.*;
 import org.junit.jupiter.api.AfterEach;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
-//RunWith(MockitoJUnitRunner.class)
+
 public class CarparkTest {
 
   static IAdhocTicketDAO adhocTicketDAO;
@@ -38,7 +39,7 @@ public class CarparkTest {
 
   static int DEFAULT_CAPACITY = 3;
 
-  Logger logger = Logger.getLogger("Unit testing for Carpark class.");
+  private Logger logger = Logger.getLogger("Unit testing for Carpark class.");
 
 
   @BeforeAll
@@ -88,7 +89,8 @@ public class CarparkTest {
 
     } catch (RuntimeException e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor: carparkId is null",
+          e.getMessage());
     }
 
     // invalid 'name' argument: empty
@@ -100,7 +102,8 @@ public class CarparkTest {
 
     } catch (Exception e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor: carparkId is empty",
+          e.getMessage());
     }
 
     // invalid 'capacity' argument: empty
@@ -112,7 +115,8 @@ public class CarparkTest {
 
     } catch (Exception e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor: capacity is zero or negative",
+          e.getMessage());
     }
 
     // invalid 'capacity' argument: negative
@@ -124,7 +128,8 @@ public class CarparkTest {
 
     } catch (Exception e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor: capacity is zero or negative",
+          e.getMessage());
     }
   }
 
@@ -257,159 +262,6 @@ public class CarparkTest {
 
   @Test
   /**
-   * The ‘Out-of-Hours’ rate of $2/hr should be charged for all the time the car was parked outside <br />
-   * of business hours. The ‘Business-Hours’ rate of $5/hr should be charged for all the time the <br />
-   * car was parked during business hours. Business hours are defined as between 7AM and 7PM, Monday <br />
-   * to Friday Parking charges are calculated in minute increments. <br />
-   *
-   * <p>NOTE: following test is necessarily 'white box'</p>
-   */
-  void calculateAddHocTicketCharge() {
-
-    logger.log(Level.INFO, "Testing calculateAdHocTicketCharge...");
-
-    float WORKING_HRS_RATE =
-            5.0f; //'rates' in public float calculateAddHocTicketCharge(long entryDateTime)
-
-    float OUT_OF_HRS_RATE = 2.0f;   //not yet defined in public float calculateAddHocTicketCharge(long entryDateTime)
-
-    float chargeAmount;
-
-    Date entryDate = null;
-
-    Date exitDate = null;
-
-    String entryStrDate, exitStrDate;
-
-    // Display a date in day, month, year format
-    DateFormat formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
-
-    entryStrDate = "02042013103542"; // "02-04-2013 10:35:42"
-
-    try {
-
-      entryDate = formatter.parse(entryStrDate);
-
-    } catch (ParseException e) {
-
-      e.printStackTrace();
-    }
-
-    exitStrDate = "02042013113542"; // entrydate + 1 hour: "02-04-2013 11:35:42"
-
-    try {
-
-      exitDate = formatter.parse(exitStrDate);
-
-    } catch (ParseException e) {
-
-      e.printStackTrace();
-    }
-
-
-    IAdhocTicket ticket = new AdhocTicket(testItem.getName(), 1, generateBarCode(1, entryStrDate));
-
-    SimpleDateFormat ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
-
-    logger.log(Level.INFO, "Equivalence partition for: WORKING HOURS ");
-
-    logger.log(Level.INFO, "Entry Date: " + ft.format(ticket.getEntryDateTime()));
-
-    logger.log(
-            Level.INFO,
-            "Checkout Date: " + ft.format(ticket.getEntryDateTime() + TimeUnit.HOURS.toMillis(1)));
-    // formula tested below is from:  public float calculateAddHocTicketCharge(long entryDateTime)
-    chargeAmount = (exitDate.getTime() - entryDate.getTime()) * WORKING_HRS_RATE / 60000;
-
-    // five dollars an hour for one hour = 5 dollars (at "working hours" rate)
-    assertEquals(5.0, chargeAmount);
-
-    /** ********************************************************************* */
-    entryStrDate = "02042013203542"; // "02-04-2013 20:35:42"
-
-    try {
-
-      entryDate = formatter.parse(entryStrDate);
-
-    } catch (ParseException e) {
-
-      e.printStackTrace();
-    }
-
-    exitStrDate = "02042013223542"; // entrydate + 2 hour: "02-04-2013 22:35:42"
-
-    try {
-
-      exitDate = formatter.parse(exitStrDate);
-
-    } catch (ParseException e) {
-
-      e.printStackTrace();
-    }
-
-    ticket = new AdhocTicket(testItem.getName(), 2, generateBarCode(2, entryStrDate));
-
-    ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
-
-    logger.log(Level.INFO, "Equivalence partition for: OUT OF HOURS ");
-
-    logger.log(Level.INFO, "Entry Date: " + ft.format(ticket.getEntryDateTime()));
-
-    logger.log(
-            Level.INFO,
-            "Checkout Date: " + ft.format(ticket.getEntryDateTime() + TimeUnit.HOURS.toMillis(2)));
-    // formula tested below is from:  public float calculateAddHocTicketCharge(long entryDateTime)
-    chargeAmount = (exitDate.getTime() - entryDate.getTime()) * OUT_OF_HRS_RATE / 60000;
-
-    // two dollars an hour for two hour = 4 dollars (at "out of hours" rate)
-    assertEquals(4.0, chargeAmount);
-
-    /** ********************************************************************* */
-
-
-    entryStrDate = "02042013053542"; // "02-04-2013 05:35:42"
-
-    try {
-
-      entryDate = formatter.parse(entryStrDate);
-
-    } catch (ParseException e) {
-
-      e.printStackTrace();
-    }
-
-    exitStrDate = "02042013093542"; // entrydate + 2 hour: "02-04-2013 09:35:42"
-
-    try {
-
-      exitDate = formatter.parse(exitStrDate);
-
-    } catch (ParseException e) {
-
-      e.printStackTrace();
-    }
-
-    ticket = new AdhocTicket(testItem.getName(), 3, generateBarCode(3, entryStrDate));
-
-    ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
-
-    logger.log(Level.INFO, "Boundary test for: OUT OF HOURS and WORKING HOURS");
-
-    logger.log(Level.INFO, "Entry Date: " + ft.format(ticket.getEntryDateTime()));
-
-    logger.log(
-            Level.INFO,
-            "Checkout Date: " + ft.format(ticket.getEntryDateTime() + TimeUnit.HOURS.toMillis(2)));
-    // formula tested below is from:  public float calculateAddHocTicketCharge(long entryDateTime)
-    chargeAmount = (exitDate.getTime() - entryDate.getTime()) * WORKING_HRS_RATE / 60000;
-
-    // two dollars an hour for two hour = 4 dollars (at "out of hours" rate)
-    // plus five dollars an hour for two hours = $14
-    assertEquals(14.0, chargeAmount);
-  }
-
-  @Test
-  /**
    * registers a season ticket with the carpark so that the season ticket may be used to access the
    * carpark.
    *
@@ -420,7 +272,6 @@ public class CarparkTest {
 
     logger.log(Level.INFO, "Testing registerSeasonTicket...");
 
-
     ISeasonTicket tktA = mock(SeasonTicket.class);
 
     doReturn("S2222").when(tktA).getId();
@@ -429,8 +280,7 @@ public class CarparkTest {
 
     testItem.registerSeasonTicket(tktA);
 
-    assertEquals(true, testItem.isSeasonTicketInUse("S2222"));
-
+    verify(seasonTicketDAO).registerTicket(tktA);
 
   }
 
@@ -449,7 +299,9 @@ public class CarparkTest {
 
     } catch (Exception e) {
 
-      assertEquals("Wrong carpark!", e.getMessage());
+      assertEquals(
+          "SeasonTicket in registerSeasonTicket has invalid CarparkId: Wrong Name, should be CarparkId: Alphabet Street",
+          e.getMessage());
     }
 
   }
@@ -485,34 +337,12 @@ public class CarparkTest {
     //not tested (valid if other methods are tested and passing)
   }
 
-  @Test
-  void isSeasonTicketInUse() {
 
-    /**
-     * This will fail because it depends upon a valid usage record having been recorded
-     * by the ExitController.ticketInserted() method which calls SeasonTicketDAO.recordTicketEntry()
-     * Will need to be tested in Integration Testing.
-     */
 
-    logger.log(Level.INFO, "Testing isSeasonTicketInUse...(will fail because usage record" +
-            "cannot be written without ExitController.ticketInserted()");
-
-    ISeasonTicket tkt = mock(SeasonTicket.class);
-
-    when(tkt.getId()).thenReturn("S2222");
-
-    when(tkt.getCarparkId()).thenReturn("Alphabet Street");
-
-    testItem.registerSeasonTicket(tkt);
-
-    assertEquals(true, testItem.isSeasonTicketInUse(tkt.getId()));
-
-  }
-
-  @Test
   /**
    * causes a new usage record to be created and associated with a season ticket.
    */
+  @Test
   void recordSeasonTicketEntry() {
 
     logger.log(Level.INFO, "Testing recordSeasonTicketEntry...");
@@ -531,6 +361,7 @@ public class CarparkTest {
 
   }
 
+
   /**
    * Throws a
    * RuntimeException if the season ticket associated with ticketId does not exist, or is currently
@@ -547,7 +378,7 @@ public class CarparkTest {
 
     } catch (Exception e) {
 
-      assertEquals("No ticket found!", e.getMessage());
+      assertEquals("Runtime Exception: No corresponding ticket.", e.getMessage());
     }
 
     /** todo: test for exception thrown if id of car exists and is 'in use' */
@@ -580,29 +411,4 @@ public class CarparkTest {
 
   }
 
-  /**
-   * utility for generating the barcode (from adhocTicket class)
-   */
-  private String generateBarCode(int ticketNum, String entryDate) {
-
-    String prefix = "0041"; // hex representation of "A". Unicode: U+0041
-
-    String hexNum = Integer.toHexString(ticketNum);
-
-    String hexDate = null;
-    try {
-      hexDate = toHexadecimal(entryDate);
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    }
-
-    return prefix + "\u002D" + hexNum + "\u002D" + hexDate;
-  }
-
-
-  private static String toHexadecimal(String text) throws UnsupportedEncodingException {
-    byte[] myBytes = text.getBytes("UTF-16");
-
-    return DatatypeConverter.printHexBinary(myBytes);
-  }
 }
