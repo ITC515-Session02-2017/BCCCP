@@ -1,14 +1,11 @@
 package bcccp.tickets.season;
 
-import bcccp.tickets.season.ISeasonTicket;
-import bcccp.tickets.season.IUsageRecordFactory;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import java.util.Date;
 
 public class SeasonTicketDAO implements ISeasonTicketDAO {
 
@@ -80,7 +77,7 @@ public class SeasonTicketDAO implements ISeasonTicketDAO {
   }
 
   @Override
-  public void recordTicketEntry(String ticketId) {
+  public void recordTicketEntry(String ticketId) throws RuntimeException {
 
     // This method creates a new usage record with current day and time as the startTime
     // and uses recordUsage method from SeasonTicket class to record it to the ArrayList
@@ -89,7 +86,15 @@ public class SeasonTicketDAO implements ISeasonTicketDAO {
 
     IUsageRecord usageRecord = factory.make(ticketId, dateTime.getTime());
 
-    findTicketById(ticketId).recordUsage(usageRecord);
+    if (findTicketById(ticketId) != null) {
+
+      findTicketById(ticketId).recordUsage(usageRecord);
+
+    } else {
+
+      throw new RuntimeException("Runtime Exception: No corresponding ticket.");
+
+    }
 
   }
 
@@ -102,5 +107,8 @@ public class SeasonTicketDAO implements ISeasonTicketDAO {
     Date dateTime = new Date();
 
     findTicketById(ticketId).endUsage(dateTime.getTime());
+
   }
+
 }
+

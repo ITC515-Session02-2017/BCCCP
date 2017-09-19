@@ -37,15 +37,18 @@ public class Carpark implements ICarpark {
     this.seasonTicketDAO = seasonTicketDAO;
 
     if (this.carparkId == null) {
-      throw new IllegalArgumentException("carparkId is null");
+      throw new IllegalArgumentException(
+          "Invalid argument passed to Carpark constructor: carparkId is null");
     }
 
     if (this.carparkId == "") {
-      throw new IllegalArgumentException("carparkId is empty");
+      throw new IllegalArgumentException(
+          "Invalid argument passed to Carpark constructor: carparkId is empty");
     }
 
     if (this.capacity <= 0) {
-      throw new IllegalArgumentException("capacity is zero or negative");
+      throw new IllegalArgumentException(
+          "Invalid argument passed to Carpark constructor: capacity is zero or negative");
     }
 
     observers = new ArrayList<>();
@@ -156,13 +159,8 @@ public class Carpark implements ICarpark {
   @Override
   public boolean isSeasonTicketInUse(String ticketId) {
 
-    String param_ticketId = ticketId;
+    return seasonTicketDAO.findTicketById(ticketId).inUse();
 
-    ISeasonTicket sTicket = seasonTicketDAO.findTicketById(ticketId);
-
-    String sTicket_Id = sTicket.getId();
-
-    return sTicket.inUse();
   }
 
   @Override
@@ -175,6 +173,7 @@ public class Carpark implements ICarpark {
   public void recordSeasonTicketExit(String ticketId) {
 
     seasonTicketDAO.recordTicketExit(ticketId);
+
   }
 
   // Following getter method to be removed after testing
