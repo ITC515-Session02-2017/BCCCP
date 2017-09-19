@@ -69,11 +69,13 @@ public abstract class CalcAdhocTicketCharge {
 
     currentDateTime.setTimeInMillis(eTime);
 
-    int startDay = startDateTime.get(Calendar.DAY_OF_MONTH);
+    int startDay = startDateTime.get(Calendar.DAY_OF_YEAR);
 
     int startDayOfWeek;
 
     long startTime = startDateTime.getTimeInMillis();
+
+    int startYear = startDateTime.get(Calendar.YEAR);
 
     int endDay = currentDateTime.get(Calendar.DAY_OF_YEAR);
 
@@ -81,18 +83,34 @@ public abstract class CalcAdhocTicketCharge {
 
     long endTime = currentDateTime.getTimeInMillis();
 
+    int endYear = currentDateTime.get(Calendar.YEAR);
+
     long midnight;
+
+    int maxDaysInStartYear = startDateTime.getActualMaximum(Calendar.DAY_OF_YEAR);
+
+    int daysBetweenStartDayEndDay = 0;
+
+    if (startYear < endYear) {
+
+      daysBetweenStartDayEndDay = (maxDaysInStartYear - startDay) + endDay;
+
+    } else {
+
+      daysBetweenStartDayEndDay = endDay - startDay;
+
+    }
 
     // The while loop calculates the charge for each day prior to the end day by
     // calling method calcDayCharge. It increments the day of the year until it reaches
     // the end day.
 
-    while (startDay != endDay) {
+    while (daysBetweenStartDayEndDay > 0) {
 
       // to find midnight of the starting day, get values for year, month, day
       // and then set the time in milliseconds to year, month, day and 59 minutes, 59 seconds.
 
-      startDay = startDateTime.get(Calendar.DAY_OF_MONTH);
+      startDay = startDateTime.get(Calendar.DAY_OF_YEAR);
 
       startDayOfWeek = startDateTime.get(Calendar.DAY_OF_WEEK);
 
@@ -111,6 +129,8 @@ public abstract class CalcAdhocTicketCharge {
       charge = charge.add(calcDayCharge(startTime, midnight, startDayOfWeek));
 
       startDateTime.add(Calendar.DAY_OF_YEAR, 1); // increment to next day
+
+      daysBetweenStartDayEndDay--;
 
       // Set the start time of next day to 00:00:00 hours, minutes, seconds
 
