@@ -163,12 +163,12 @@ class CalcAdhocTicketChargeTest {
   @Test
   void mixedHoursAdhocTicketCharge() {
 
-    BigDecimal val = new BigDecimal(4);
+    BigDecimal val = new BigDecimal(14);
 
     // Display a date in day, month, year format
     DateFormat formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
 
-    entryStrDate = "02042013053542"; // "02-04-2013 05:35:42"
+    entryStrDate = "02042013050000"; // "02-04-2013 05:00:00"
 
     try {
 
@@ -179,7 +179,7 @@ class CalcAdhocTicketChargeTest {
       e.printStackTrace();
     }
 
-    exitStrDate = "02042013093542"; // entrydate + 2 hour: "02-04-2013 09:35:42"
+    exitStrDate = "02042013090000"; // entrydate + 4 hour: "02-04-2013 09:00:00"
 
     try {
 
@@ -205,7 +205,8 @@ class CalcAdhocTicketChargeTest {
     result = CalcAdhocTicketCharge.calcCharge(entryDate.getTime(), exitDate.getTime());
 
     // two dollars an hour for two hour = 4 dollars (at "out of hours" rate)
-    // plus five dollars an hour for two hours = $14
+    // plus five dollars an hour for two hours = $14 (at "working hours" rate
+    // = $14.00
 
     assertEquals(val, result);
 
