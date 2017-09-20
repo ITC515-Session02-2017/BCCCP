@@ -96,27 +96,6 @@ public class Carpark implements ICarpark {
     return adhocTicketDAO.findTicketByBarcode(barcode);
   }
 
-//  @Override
-//  public float calculateAddHocTicketCharge(long entryDateTime) {
-//    // Calculation: get current Date and Time, subtract entryDateTime, multiply result by
-//    // the $ charge rate and return charge. Assumption that rates are a fixed rate of $5.00 per hour.
-//    // Convert time to hours by dividing by 60,000. Assumption this is short-stay tariff car park.
-//
-//    final BigDecimal OUT_OF_HOURS_RATE = new BigDecimal(2.0);
-//
-//    final BigDecimal BUSINESS_HOURS_RATE = new BigDecimal(5.0);
-//
-//    final BigDecimal START_BUS_HOURS = new BigDecimal(7.0);
-//
-//    final BigDecimal END_BUS_HOURS = new BigDecimal(19.0);
-//
-//    Date dateTime = new Date();
-//
-//    float chargeAmount = (dateTime.getTime() - entryDateTime) * rates / 60000;
-//
-//    return chargeAmount;
-//  }
-
   @Override
   public void recordAdhocTicketExit() {
 

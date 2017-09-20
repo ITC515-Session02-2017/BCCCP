@@ -342,12 +342,12 @@ public class EntryController implements ICarSensorResponder, ICarparkObserver, I
     System.out.println("EntryController : " + message);
   }
 
-  public STATE getState() {
-    return state;
+  public String getState() {
+    return state.toString();
   }
 
-  public STATE getPreviousState() {
-    return prevState;
+  public String getPreviousState() {
+    return prevState.toString();
   }
 
 }
