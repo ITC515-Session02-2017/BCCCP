@@ -208,7 +208,7 @@ class CalcAdhocTicketChargeTest {
     // plus five dollars an hour for two hours = $14
 
     assertEquals(val, result);
-    
+
   }
 
 
