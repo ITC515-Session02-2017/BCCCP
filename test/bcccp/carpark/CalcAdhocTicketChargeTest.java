@@ -31,6 +31,8 @@ class CalcAdhocTicketChargeTest {
 
   String entryStrDate, exitStrDate;
 
+  BigDecimal result;
+
   static IAdhocTicketDAO adhocTicketDAO;
 
   static ISeasonTicketDAO seasonTicketDAO;
@@ -45,7 +47,7 @@ class CalcAdhocTicketChargeTest {
 
   private Logger logger = Logger
       .getLogger("Unit testing for Carpark's charge calculation methodology.");
-  BigDecimal result;
+
 
   @BeforeAll
   static void before() {
@@ -60,7 +62,7 @@ class CalcAdhocTicketChargeTest {
   }
 
   @Test
-  void calculateAddHocTicketCharge() {
+  void workingHoursAddHocTicketCharge() {
 
     BigDecimal val = new BigDecimal(5);
 
@@ -108,12 +110,105 @@ class CalcAdhocTicketChargeTest {
   }
 
   @Test
-  void calcCharge() {
+  void outOfHoursAhocTicketcCharge() {
+
+    BigDecimal val = new BigDecimal(4);
+
+    // Display a date in day, month, year format
+    DateFormat formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
+
+    entryStrDate = "02042013203542"; // "02-04-2013 20:35:42"
+
+    try {
+
+      entryDate = formatter.parse(entryStrDate);
+
+    } catch (ParseException e) {
+
+      e.printStackTrace();
+    }
+
+    exitStrDate = "02042013223542"; // entrydate + 2 hour: "02-04-2013 22:35:42"
+
+    try {
+
+      exitDate = formatter.parse(exitStrDate);
+
+    } catch (ParseException e) {
+
+      e.printStackTrace();
+    }
+
+    IAdhocTicket ticket = new AdhocTicket(testItem.getName(), 2, generateBarCode(2, entryStrDate));
+
+    SimpleDateFormat ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
+
+    logger.log(Level.INFO, "Equivalence partition for: OUT OF HOURS ");
+
+    logger.log(Level.INFO, "Entry Date: " + ft.format(ticket.getEntryDateTime()));
+
+    logger.log(
+        Level.INFO,
+        "Checkout Date: " + ft.format(ticket.getEntryDateTime() + TimeUnit.HOURS.toMillis(2)));
+
+    result = CalcAdhocTicketCharge.calcCharge(entryDate.getTime(), exitDate.getTime());
+
+    // two dollars an hour for two hour = 4 dollars (at "out of hours" rate)
+
+    assertEquals(val, result);
 
   }
 
+
   @Test
-  void calcDayCharge() {
+  void mixedHoursAdhocTicketCharge() {
+
+    BigDecimal val = new BigDecimal(14);
+
+    // Display a date in day, month, year format
+    DateFormat formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
+
+    entryStrDate = "02042013050000"; // "02-04-2013 05:00:00"
+
+    try {
+
+      entryDate = formatter.parse(entryStrDate);
+
+    } catch (ParseException e) {
+
+      e.printStackTrace();
+    }
+
+    exitStrDate = "02042013090000"; // entrydate + 4 hour: "02-04-2013 09:00:00"
+
+    try {
+
+      exitDate = formatter.parse(exitStrDate);
+
+    } catch (ParseException e) {
+
+      e.printStackTrace();
+    }
+
+    IAdhocTicket ticket = new AdhocTicket(testItem.getName(), 3, generateBarCode(3, entryStrDate));
+
+    SimpleDateFormat ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
+
+    logger.log(Level.INFO, "Boundary test for: OUT OF HOURS and WORKING HOURS");
+
+    logger.log(Level.INFO, "Entry Date: " + ft.format(ticket.getEntryDateTime()));
+
+    logger.log(
+        Level.INFO,
+        "Checkout Date: " + ft.format(ticket.getEntryDateTime() + TimeUnit.HOURS.toMillis(2)));
+
+    result = CalcAdhocTicketCharge.calcCharge(entryDate.getTime(), exitDate.getTime());
+
+    // two dollars an hour for two hour = 4 dollars (at "out of hours" rate)
+    // plus five dollars an hour for two hours = $14 (at "working hours" rate
+    // = $14.00
+
+    assertEquals(val, result);
 
   }
 
