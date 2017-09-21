@@ -1,10 +1,9 @@
 package bcccp.carpark.paystation;
 
 import bcccp.carpark.CalcAdhocTicketCharge;
-import bcccp.tickets.adhoc.*;
-import bcccp.tickets.season.*;
 import bcccp.carpark.Carpark;
-
+import bcccp.tickets.adhoc.*;
+import bcccp.tickets.season.ISeasonTicketDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,11 +15,10 @@ import org.mockito.exceptions.misusing.UnfinishedVerificationException;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-class PaystationControllerTest {
+class IntegPaystationControllerTest {
 
   static String name;
   static int capacity;
