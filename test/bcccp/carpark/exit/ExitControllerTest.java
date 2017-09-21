@@ -8,12 +8,17 @@ import bcccp.tickets.adhoc.AdhocTicket;
 import bcccp.tickets.adhoc.AdhocTicketDAO;
 import bcccp.tickets.adhoc.IAdhocTicketDAO;
 import bcccp.tickets.season.SeasonTicket;
+import bcccp.tickets.season.ISeasonTicketDAO;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.*;
+import org.mockito.MockitoAnnotations;
+import static org.mockito.Matchers.anyString;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,6 +42,8 @@ public class ExitControllerTest {
 
   static IAdhocTicketDAO adhocTicketDAOTest;
 
+  static ISeasonTicketDAO seasonTicketDAOTest;
+
   static SeasonTicket seasonTicket;
 
   static AdhocTicket adhocTicket;
@@ -45,15 +52,22 @@ public class ExitControllerTest {
 
   static String barcodeForSeasonTicket;
 
-  private enum STATE {
-    IDLE,
-    WAITING,
-    PROCESSED,
-    REJECTED,
-    TAKEN,
-    EXITING,
-    EXITED,
-    BLOCKED}
+
+  final String IDLE = "IDLE";
+
+  final String WAITING = "WAITING";
+
+  final String PROCESSED = "PROCESSED";
+
+  final String REJECTED = "REJECTED";
+
+  final String TAKEN = "TAKEN";
+
+  final String EXITING = "EXITING";
+
+  final String EXITED = "EXITED";
+
+  final String BLOCKED = "BLOCKED";
 
   @BeforeAll
   static void setupAllTests() {
@@ -81,9 +95,9 @@ public class ExitControllerTest {
 
     sut = new ExitController(carpark, exitGate, insideSensor, outsideSensor, exitUserInterface);
 
-    barcodeForAdhocTicket = "Valid Adhoc Ticket";
+    barcodeForAdhocTicket = "A valid Adhoc Ticket";
 
-    barcodeForSeasonTicket = "Valid Season Ticket";
+    barcodeForSeasonTicket = "S valid Season Ticket";
 
     when(insideSensor.getId()).thenReturn("Inside Sensor");
 
@@ -199,37 +213,97 @@ public class ExitControllerTest {
   @Test
   void exitControllerInitialisedToIdle() {
 
-    assertEquals(STATE.IDLE, sut.getState());
+    assertEquals(IDLE, sut.getState());
 
   }
 
   @Test
   void ticketInsertedCheckProcessingValidAdhocTicket() {
 
-    sut.ticketInserted(barcodeForAdhocTicket);
+    String validAdhocTicketBarcode = "A" + barcodeForAdhocTicket.substring(1);
 
-    assertTrue((STATE.PROCESSED.equals(sut.getState())) &&
-            (STATE.WAITING.equals(sut.getPrevState())));
+    when(carpark.getAdhocTicket(validAdhocTicketBarcode)).thenReturn(adhocTicket);
+
+    when(adhocTicket.getPaidDateTime()).thenReturn(new Date().getTime());
+
+    when(adhocTicket.isPaid()).thenReturn(true);
+
+    sut.ticketInserted(validAdhocTicketBarcode);
+
+    assertTrue((PROCESSED.equals(sut.getState())) &&
+            (WAITING.equals(sut.getPrevState())));
+
+  }
+
+  @Test
+  void ticketInsertedCheckProcessingNotValidAdhocTicket() {
+
+    String validAdhocTicketBarcode = "A" + barcodeForAdhocTicket.substring(1);
+
+    when(carpark.getAdhocTicket(validAdhocTicketBarcode)).thenReturn(adhocTicket);
+
+    when(adhocTicket.getPaidDateTime()).thenReturn(new Date().getTime());
+
+    when(adhocTicket.isPaid()).thenReturn(false);
+
+    sut.ticketInserted(validAdhocTicketBarcode);
+
+    assertTrue((REJECTED.equals(sut.getState())) &&
+            (WAITING.equals(sut.getPrevState())));
 
   }
 
   @Test
   void ticketInsertedCheckProcessingValidSeasonTicket() {
 
-    sut.ticketInserted(barcodeForSeasonTicket);
+    String validSeasonTicketBarcode = "S" + barcodeForSeasonTicket.substring(1);
 
-    assertTrue((STATE.PROCESSED.equals(sut.getState())) &&
-            (STATE.WAITING.equals(sut.getPrevState())));
+    when(carpark.isSeasonTicketValid(validSeasonTicketBarcode)).thenReturn(true);
+
+    when(carpark.isSeasonTicketInUse(validSeasonTicketBarcode)).thenReturn(true);
+
+    sut.ticketInserted(validSeasonTicketBarcode);
+
+    assertTrue((PROCESSED.equals(sut.getState())) &&
+            (WAITING.equals(sut.getPrevState())));
 
   }
+
+  @Test
+  void ticketInsertedCheckProcessingNotValidSeasonTicket() {
+
+    String validSeasonTicketBarcode = "S" + barcodeForSeasonTicket.substring(1);
+
+    when(carpark.isSeasonTicketValid(validSeasonTicketBarcode)).thenReturn(false);
+
+    when(carpark.isSeasonTicketInUse(validSeasonTicketBarcode)).thenReturn(false);
+
+    sut.ticketInserted(barcodeForSeasonTicket);
+
+    assertTrue((REJECTED.equals(sut.getState())) &&
+            (WAITING.equals(sut.getPrevState()))); }
+
 
   @Test
   void ticketInsertedCheckProcessingNotValidTicket() {
 
     sut.ticketInserted("Invalid Ticket");
 
-    assertTrue((STATE.REJECTED.equals(sut.getState())) &&
-            (STATE.WAITING.equals(sut.getPrevState())));
+    assertTrue((REJECTED.equals(sut.getState())) &&
+            (WAITING.equals(sut.getPrevState())));
+
+    verify(exitUserInterface).beep();
+
+  }
+
+  @Test
+  void ticketInsertedCheckProcessingNotWaitingState() {
+
+    sut.ticketInserted(barcodeForSeasonTicket);
+
+    verify(exitUserInterface).beep();
+
+    assertFalse(WAITING.equals(sut.getPrevState()));
 
   }
 
@@ -238,8 +312,8 @@ public class ExitControllerTest {
 
     sut.ticketTaken();
 
-    assertTrue((STATE.TAKEN.equals(sut.getState())) &&
-            (STATE.PROCESSED.equals(sut.getPrevState())));
+    assertTrue((TAKEN.equals(sut.getState())) &&
+            (PROCESSED.equals(sut.getPrevState())));
 
   }
 
@@ -248,8 +322,8 @@ public class ExitControllerTest {
 
     sut.ticketTaken();
 
-    assertTrue((STATE.WAITING.equals(sut.getState())) &&
-            (STATE.REJECTED.equals(sut.getPrevState())));
+    assertTrue((WAITING.equals(sut.getState())) &&
+            (REJECTED.equals(sut.getPrevState())));
 
   }
 
@@ -260,8 +334,8 @@ public class ExitControllerTest {
 
     verify(exitUserInterface).beep();
 
-    assertFalse((STATE.PROCESSED.equals(sut.getPrevState())) ||
-            (STATE.REJECTED.equals(sut.getPrevState())));
+    assertFalse((PROCESSED.equals(sut.getPrevState())) ||
+            (REJECTED.equals(sut.getPrevState())));
 
   }
 
@@ -270,8 +344,8 @@ public class ExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue((STATE.IDLE.equals(sut.getState())) &&
-            (STATE.WAITING.equals(sut.getPrevState())));
+    assertTrue((WAITING.equals(sut.getState())) &&
+            (IDLE.equals(sut.getPrevState())));
 
   }
 
@@ -280,8 +354,8 @@ public class ExitControllerTest {
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
-    assertTrue((STATE.IDLE.equals(sut.getState())) &&
-            (STATE.BLOCKED.equals(sut.getPrevState())));
+    assertTrue((BLOCKED.equals(sut.getState())) &&
+            (IDLE.equals(sut.getPrevState())));
 
   }
 
@@ -292,20 +366,18 @@ public class ExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue(STATE.IDLE.equals(sut.getState()) &&
-            (STATE.WAITING.equals(sut.getPrevState())));
+    assertTrue(IDLE.equals(sut.getState()));
 
   }
 
   @Test
-  void carEventDetectedOutsideSensorDetectsCarAbsenceWhenWaitingFullIssuedOrValidated() {
+  void carEventDetectedOutsideSensorDetectsCarPresenceWhenWaitingFullIssuedOrValidated() {
 
     // Note the spec for this event is incorrect - ExitController has no STATE for FULL, ISSUED, or VALIDATED
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
-    assertTrue(STATE.BLOCKED.equals(sut.getState()) &&
-            (STATE.WAITING.equals(sut.getPrevState())));
+    assertTrue(BLOCKED.equals(sut.getState()));
 
   }
 
@@ -314,8 +386,8 @@ public class ExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue((STATE.IDLE.equals(sut.getState())) &&
-            (STATE.BLOCKED.equals(sut.getPrevState())));
+    assertTrue((IDLE.equals(sut.getState())) &&
+            (BLOCKED.equals(sut.getPrevState())));
 
   }
 
@@ -324,7 +396,7 @@ public class ExitControllerTest {
 
     sut.carEventDetected(outsideSensor.getId(), true);
 
-    assertTrue(STATE.BLOCKED.equals(sut.getPrevState()));
+    assertTrue(BLOCKED.equals(sut.getPrevState()));
   }
 
   @Test
@@ -332,18 +404,18 @@ public class ExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue((STATE.IDLE.equals(sut.getState())) &&
-              (STATE.TAKEN.equals(sut.getPrevState())));
+    assertTrue((IDLE.equals(sut.getState())) &&
+              (TAKEN.equals(sut.getPrevState())));
 
     }
 
   @Test
-  void carEventDetectedOutsideSensorDetectsCarAbsenceWhenTaken() {
+  void carEventDetectedOutsideSensorDetectsCarPresenceWhenTaken() {
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
-    assertTrue((STATE.EXITING.equals(sut.getState())) &&
-            (STATE.TAKEN.equals(sut.getPrevState())));
+    assertTrue((EXITING.equals(sut.getState())) &&
+            (TAKEN.equals(sut.getPrevState())));
 
     }
 
@@ -352,8 +424,8 @@ public class ExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue((STATE.EXITED.equals(sut.getState())) &&
-            (STATE.EXITING.equals(sut.getPrevState())));
+    assertTrue((EXITED.equals(sut.getState())) &&
+            (EXITING.equals(sut.getPrevState())));
 
   }
 
@@ -362,8 +434,8 @@ public class ExitControllerTest {
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
-    assertTrue((STATE.TAKEN.equals(sut.getState())) &&
-            (STATE.EXITING.equals(sut.getPrevState())));
+    assertTrue((TAKEN.equals(sut.getState())) &&
+            (EXITING.equals(sut.getPrevState())));
 
   }
 
@@ -372,8 +444,8 @@ public class ExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue((STATE.EXITING.equals(sut.getState())) &&
-            (STATE.EXITED.equals(sut.getPrevState())));
+    assertTrue((EXITING.equals(sut.getState())) &&
+            (EXITED.equals(sut.getPrevState())));
 
   }
 
@@ -382,8 +454,8 @@ public class ExitControllerTest {
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
-    assertTrue((STATE.IDLE.equals(sut.getState())) &&
-            (STATE.EXITED.equals(sut.getPrevState())));
+    assertTrue((IDLE.equals(sut.getState())) &&
+            (EXITED.equals(sut.getPrevState())));
 
   }
 
