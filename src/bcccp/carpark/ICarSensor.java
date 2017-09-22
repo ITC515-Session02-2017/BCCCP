@@ -7,4 +7,5 @@ public interface ICarSensor {
 	public String getId();
 	public boolean carIsDetected();
 
+    public void sensorOposite();
 }

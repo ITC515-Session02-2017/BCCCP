@@ -51,7 +51,6 @@ public class CarSensor extends JFrame implements ICarSensor {
     contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
     setContentPane(contentPane);
     contentPane.setLayout(null);
-
     carDetected = false;
     JButton detectorButton = new JButton();
     detectorButton.setFont(new Font("Tahoma", Font.PLAIN, 24));
@@ -97,5 +96,11 @@ public class CarSensor extends JFrame implements ICarSensor {
   public boolean carIsDetected() {
     return carDetected;
   }
+  
+  
+  
+  public void sensorOposite() {
+		carDetected = !carDetected;
+	}
 
 }
