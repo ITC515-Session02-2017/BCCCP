@@ -34,7 +34,7 @@ public class AdhocTicketFactory implements IAdhocTicketFactory {
 
     public String generateBarCode(int ticketNum, String entryDate) {
 
-        String prefix = "0041"; // hex representation of "A". Unicode: U+0041
+        String prefix = "\u0041"; // hex representation of "A". Unicode: U+0041
 
         String hexNum = Integer.toHexString(ticketNum);
 
