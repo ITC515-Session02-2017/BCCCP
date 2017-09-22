@@ -23,7 +23,9 @@ public class PaystationController implements IPaystationController {
   @Override
   public void ticketInserted(String barcode) {
 
-    if (carpark.getAdhocTicket(barcode).getEntryDateTime() == adhocTicket.getEntryDateTime()) {
+    adhocTicket = carpark.getAdhocTicket(barcode);
+
+    if (adhocTicket != null) {
       charge = CalcAdhocTicketCharge.calculateAddHocTicketCharge(adhocTicket.getEntryDateTime());
       ui.display("AU " + charge);
 
