@@ -184,6 +184,10 @@ public abstract class CalcAdhocTicketCharge {
 
     endBusHours.setTimeInMillis(eTime);
 
+    BigDecimal testBusHours = new BigDecimal(END_BUS_HOURS.longValue());
+
+    int testHourOfDay = endBusHours.get(Calendar.HOUR_OF_DAY);
+
     endBusHours.set(Calendar.HOUR_OF_DAY, END_BUS_HOURS.intValue());
 
     long eBusHours = endBusHours.getTimeInMillis();
@@ -248,6 +252,10 @@ public abstract class CalcAdhocTicketCharge {
       dayCharge = (decimalETime.subtract(decimalSTime)).multiply(OUT_OF_HOURS_RATE);
 
       }
+
+    BigDecimal testDayCharge = new BigDecimal(0);
+
+    testDayCharge = dayCharge.divide(HOURS_CONVERTER);
 
     return dayCharge.divide(HOURS_CONVERTER);
   }
