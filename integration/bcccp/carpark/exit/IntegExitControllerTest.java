@@ -227,7 +227,7 @@ public class IntegExitControllerTest {
   @Test
   void exitControllerInitialisedToIdle() {
 
-    assertEquals(IDLE, sut.getState());
+    assertEquals(IDLE, sut.getTestState());
 
   }
 
@@ -238,8 +238,8 @@ public class IntegExitControllerTest {
 
     sut.ticketInserted(barcodeForAdhocTicket);
 
-    assertTrue((PROCESSED.equals(sut.getState())) &&
-            (WAITING.equals(sut.getPrevState())));
+    assertTrue((PROCESSED.equals(sut.getTestState())) &&
+            (WAITING.equals(sut.getPrevTestState())));
 
   }
 
@@ -248,8 +248,8 @@ public class IntegExitControllerTest {
 
     sut.ticketInserted(barcodeForAdhocTicket);
 
-    assertTrue((REJECTED.equals(sut.getState())) &&
-            (WAITING.equals(sut.getPrevState())));
+    assertTrue((REJECTED.equals(sut.getTestState())) &&
+            (WAITING.equals(sut.getPrevTestState())));
 
   }
 
@@ -258,8 +258,8 @@ public class IntegExitControllerTest {
 
     sut.ticketInserted(idForSeasonTicket);
 
-    assertTrue((PROCESSED.equals(sut.getState())) &&
-            (WAITING.equals(sut.getPrevState())));
+    assertTrue((PROCESSED.equals(sut.getTestState())) &&
+            (WAITING.equals(sut.getPrevTestState())));
 
   }
 
@@ -285,8 +285,8 @@ public class IntegExitControllerTest {
 
     sut.ticketInserted(idForSeasonTicket);
 
-    assertTrue((REJECTED.equals(sut.getState())) &&
-            (WAITING.equals(sut.getPrevState())));
+    assertTrue((REJECTED.equals(sut.getTestState())) &&
+            (WAITING.equals(sut.getPrevTestState())));
 
   }
 
@@ -295,8 +295,8 @@ public class IntegExitControllerTest {
 
     sut.ticketInserted("Invalid Ticket");
 
-    assertTrue((REJECTED.equals(sut.getState())) &&
-            (WAITING.equals(sut.getPrevState())));
+    assertTrue((REJECTED.equals(sut.getTestState())) &&
+            (WAITING.equals(sut.getPrevTestState())));
 
   }
 
@@ -305,7 +305,7 @@ public class IntegExitControllerTest {
 
     sut.ticketInserted(idForSeasonTicket);
 
-    assertFalse(WAITING.equals(sut.getPrevState()));
+    assertFalse(WAITING.equals(sut.getPrevTestState()));
 
   }
 
@@ -320,7 +320,7 @@ public class IntegExitControllerTest {
 
     sut.ticketTaken();
 
-    assertEquals(TAKEN,sut.getState());
+    assertEquals(TAKEN,sut.getTestState());
 
   }
 
@@ -331,7 +331,7 @@ public class IntegExitControllerTest {
 
     sut.ticketTaken();
 
-    assertEquals(WAITING,sut.getPrevState());
+    assertEquals(WAITING,sut.getPrevTestState());
 
   }
 
@@ -342,8 +342,8 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue((WAITING.equals(sut.getState())) &&
-            (IDLE.equals(sut.getPrevState())));
+    assertTrue((WAITING.equals(sut.getTestState())) &&
+            (IDLE.equals(sut.getPrevTestState())));
 
   }
 
@@ -354,8 +354,8 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
-    assertTrue((BLOCKED.equals(sut.getState())) &&
-            (IDLE.equals(sut.getPrevState())));
+    assertTrue((BLOCKED.equals(sut.getTestState())) &&
+            (IDLE.equals(sut.getPrevTestState())));
 
   }
 
@@ -369,7 +369,7 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue(IDLE.equals(sut.getState()));
+    assertTrue(IDLE.equals(sut.getTestState()));
 
   }
 
@@ -383,7 +383,7 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
-    assertTrue(BLOCKED.equals(sut.getState()));
+    assertTrue(BLOCKED.equals(sut.getTestState()));
 
   }
 
@@ -394,8 +394,8 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue((IDLE.equals(sut.getState())) &&
-            (BLOCKED.equals(sut.getPrevState())));
+    assertTrue((IDLE.equals(sut.getTestState())) &&
+            (BLOCKED.equals(sut.getPrevTestState())));
 
   }
 
@@ -406,7 +406,7 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(outsideSensor.getId(), true);
 
-    assertTrue(BLOCKED.equals(sut.getPrevState()));
+    assertTrue(BLOCKED.equals(sut.getPrevTestState()));
   }
 
   @Test
@@ -416,8 +416,8 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue((IDLE.equals(sut.getState())) &&
-              (TAKEN.equals(sut.getPrevState())));
+    assertTrue((IDLE.equals(sut.getTestState())) &&
+              (TAKEN.equals(sut.getPrevTestState())));
 
     }
 
@@ -428,8 +428,8 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
-    assertTrue((EXITING.equals(sut.getState())) &&
-            (TAKEN.equals(sut.getPrevState())));
+    assertTrue((EXITING.equals(sut.getTestState())) &&
+            (TAKEN.equals(sut.getPrevTestState())));
 
     }
 
@@ -440,8 +440,8 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue((EXITED.equals(sut.getState())) &&
-            (EXITING.equals(sut.getPrevState())));
+    assertTrue((EXITED.equals(sut.getTestState())) &&
+            (EXITING.equals(sut.getPrevTestState())));
 
   }
 
@@ -452,8 +452,8 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
-    assertTrue((TAKEN.equals(sut.getState())) &&
-            (EXITING.equals(sut.getPrevState())));
+    assertTrue((TAKEN.equals(sut.getTestState())) &&
+            (EXITING.equals(sut.getPrevTestState())));
 
   }
 
@@ -464,8 +464,8 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(insideSensor.getId(),true);
 
-    assertTrue((EXITING.equals(sut.getState())) &&
-            (EXITED.equals(sut.getPrevState())));
+    assertTrue((EXITING.equals(sut.getTestState())) &&
+            (EXITED.equals(sut.getPrevTestState())));
 
   }
 
@@ -476,8 +476,8 @@ public class IntegExitControllerTest {
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
-    assertTrue((IDLE.equals(sut.getState())) &&
-            (EXITED.equals(sut.getPrevState())));
+    assertTrue((IDLE.equals(sut.getTestState())) &&
+            (EXITED.equals(sut.getPrevTestState())));
 
   }
 
