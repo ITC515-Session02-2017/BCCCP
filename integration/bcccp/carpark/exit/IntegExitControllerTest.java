@@ -1,18 +1,16 @@
 package bcccp.carpark.exit;
 
-import bcccp.carpark.Carpark;
-import bcccp.carpark.ICarSensor;
-import bcccp.carpark.IGate;
-import bcccp.tickets.adhoc.AdhocTicket;
-import bcccp.tickets.adhoc.AdhocTicketDAO;
-import bcccp.tickets.adhoc.IAdhocTicketDAO;
-import bcccp.tickets.season.ISeasonTicketDAO;
-import bcccp.tickets.season.SeasonTicket;
+import bcccp.carpark.*;
+import bcccp.tickets.adhoc.*;
+import bcccp.tickets.season.*;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
+
+import java.util.Calendar;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -31,17 +29,25 @@ public class IntegExitControllerTest {
 
   static IExitUI exitUserInterface;
 
-  static IAdhocTicketDAO adhocTicketDAOTest;
+  static IAdhocTicketDAO adhocTicketDAO;
 
-  static ISeasonTicketDAO seasonTicketDAOTest;
+  static AdhocTicketFactory adhocTicketFactory;
+
+  static ISeasonTicketDAO seasonTicketDAO;
+
+  static IUsageRecordFactory usageRecordFactory;
 
   static SeasonTicket seasonTicket;
 
-  static AdhocTicket adhocTicket;
+  static IAdhocTicket adhocTicket;
 
   static String barcodeForAdhocTicket;
 
-  static String barcodeForSeasonTicket;
+  static String idForSeasonTicket;
+
+  static long validStartTime;
+
+  static long validEndTime;
 
 
   final String IDLE = "IDLE";
@@ -63,22 +69,23 @@ public class IntegExitControllerTest {
   @BeforeAll
   static void setupAllTests() {
 
-    carpark = mock(Carpark.class);
+    exitGate = new Gate(20,20);
 
-    exitGate = mock(IGate.class);
+    outsideSensor = new CarSensor("Outside Sensor",20, 20);
 
-    outsideSensor = mock(ICarSensor.class);
+    insideSensor = new CarSensor("Inside Sensor", 20, 20);
 
-    insideSensor = mock(ICarSensor.class);
+    adhocTicketFactory = new AdhocTicketFactory();
 
-    exitUserInterface = mock(IExitUI.class);
+    adhocTicketDAO = new AdhocTicketDAO(adhocTicketFactory);
 
-    adhocTicketDAOTest = mock(AdhocTicketDAO.class);
+    exitUserInterface = new ExitUI(20,20);
 
-    seasonTicket = mock(SeasonTicket.class);
+    usageRecordFactory = new UsageRecordFactory();
 
-    adhocTicket = mock(AdhocTicket.class);
+    seasonTicketDAO = new SeasonTicketDAO(usageRecordFactory);
 
+    carpark = new Carpark("Integral Carpark #12", 4500, adhocTicketDAO, seasonTicketDAO);
   }
 
   @BeforeEach
@@ -86,13 +93,32 @@ public class IntegExitControllerTest {
 
     sut = new ExitController(carpark, exitGate, insideSensor, outsideSensor, exitUserInterface);
 
-    barcodeForAdhocTicket = "A valid Adhoc Ticket";
+    Calendar aValidStartTime = Calendar.getInstance();
 
-    barcodeForSeasonTicket = "S valid Season Ticket";
+    aValidStartTime.set(2017,9,20,9,52,38);
 
-    when(insideSensor.getId()).thenReturn("Inside Sensor");
+    validStartTime = aValidStartTime.getTimeInMillis();
 
-    when(outsideSensor.getId()).thenReturn("Outside Sensor");
+    Calendar aValidEndTime = Calendar.getInstance();
+
+    aValidEndTime.set(2017,9,28,11,43,12);
+
+    validEndTime = aValidEndTime.getTimeInMillis();
+
+    seasonTicket = new SeasonTicket("78", "Integral Carpark #12",
+            validStartTime, validEndTime);
+
+    seasonTicketDAO.registerTicket(seasonTicket);
+
+    String testId = seasonTicket.getId();
+
+    seasonTicketDAO.recordTicketEntry(seasonTicket.getId());
+
+    adhocTicket = adhocTicketFactory.make("Integral Carpark #12", 51);
+
+    barcodeForAdhocTicket = adhocTicketFactory.generateBarCode(51, "15052017111545");
+
+    idForSeasonTicket = seasonTicket.getId();
 
   }
 
@@ -124,7 +150,8 @@ public class IntegExitControllerTest {
 
     } catch (RuntimeException e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor, entry gate arg.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor, entry gate arg.",
+              e.getMessage());
 
     }
 
@@ -141,7 +168,8 @@ public class IntegExitControllerTest {
 
     } catch (RuntimeException e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor, inside sensor arg.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor, inside sensor arg.",
+              e.getMessage());
 
     }
 
@@ -158,7 +186,8 @@ public class IntegExitControllerTest {
 
     } catch (RuntimeException e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor, outside sensor arg.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor, outside sensor arg.",
+              e.getMessage());
 
     }
 
@@ -174,7 +203,8 @@ public class IntegExitControllerTest {
 
     } catch (RuntimeException e) {
 
-      assertEquals("Invalid argument passed to Carpark constructor, control pillar ui arg.", e.getMessage());
+      assertEquals("Invalid argument passed to Carpark constructor, control pillar ui arg.",
+              e.getMessage());
 
     }
 
@@ -183,21 +213,14 @@ public class IntegExitControllerTest {
   @Test
   void exitControllerRegisteredWithOutsideCarSensor() {
 
-    verify(outsideSensor).registerResponder(sut);
+    assertEquals(outsideSensor.carIsDetected(),true);
 
   }
 
   @Test
   void exitControllerRegisteredWithInsideCarSensor() {
 
-    verify(insideSensor).registerResponder(sut);
-
-  }
-
-  @Test
-  void exitControllerRegisteredWithUserInterface() {
-
-    verify(exitUserInterface).registerController(sut);
+    assertEquals(insideSensor.carIsDetected(),true);
 
   }
 
@@ -209,17 +232,11 @@ public class IntegExitControllerTest {
   }
 
   @Test
-  void ticketInsertedCheckProcessingValidAdhocTicket() {
+  void ticketInsertedCheckValidAdhocTicketProcessed() {
 
-    String validAdhocTicketBarcode = "A" + barcodeForAdhocTicket.substring(1);
+    adhocTicket.pay(new Date().getTime()+900000, 5.0f);
 
-    when(carpark.getAdhocTicket(validAdhocTicketBarcode)).thenReturn(adhocTicket);
-
-    when(adhocTicket.getPaidDateTime()).thenReturn(new Date().getTime());
-
-    when(adhocTicket.isPaid()).thenReturn(true);
-
-    sut.ticketInserted(validAdhocTicketBarcode);
+    sut.ticketInserted(barcodeForAdhocTicket);
 
     assertTrue((PROCESSED.equals(sut.getState())) &&
             (WAITING.equals(sut.getPrevState())));
@@ -227,17 +244,9 @@ public class IntegExitControllerTest {
   }
 
   @Test
-  void ticketInsertedCheckProcessingNotValidAdhocTicket() {
+  void ticketInsertedCheckNotValidAdhocTicketRejected() {
 
-    String validAdhocTicketBarcode = "A" + barcodeForAdhocTicket.substring(1);
-
-    when(carpark.getAdhocTicket(validAdhocTicketBarcode)).thenReturn(adhocTicket);
-
-    when(adhocTicket.getPaidDateTime()).thenReturn(new Date().getTime());
-
-    when(adhocTicket.isPaid()).thenReturn(false);
-
-    sut.ticketInserted(validAdhocTicketBarcode);
+    sut.ticketInserted(barcodeForAdhocTicket);
 
     assertTrue((REJECTED.equals(sut.getState())) &&
             (WAITING.equals(sut.getPrevState())));
@@ -245,15 +254,9 @@ public class IntegExitControllerTest {
   }
 
   @Test
-  void ticketInsertedCheckProcessingValidSeasonTicket() {
+  void ticketInsertedCheckValidSeasonTicketProcessed() {
 
-    String validSeasonTicketBarcode = "S" + barcodeForSeasonTicket.substring(1);
-
-    when(carpark.isSeasonTicketValid(validSeasonTicketBarcode)).thenReturn(true);
-
-    when(carpark.isSeasonTicketInUse(validSeasonTicketBarcode)).thenReturn(true);
-
-    sut.ticketInserted(validSeasonTicketBarcode);
+    sut.ticketInserted(idForSeasonTicket);
 
     assertTrue((PROCESSED.equals(sut.getState())) &&
             (WAITING.equals(sut.getPrevState())));
@@ -261,38 +264,46 @@ public class IntegExitControllerTest {
   }
 
   @Test
-  void ticketInsertedCheckProcessingNotValidSeasonTicket() {
+  void ticketInsertedCheckNotValidSeasonTicketRejected() {
 
-    String validSeasonTicketBarcode = "S" + barcodeForSeasonTicket.substring(1);
+    // Season ticket is not registered and does not have entry recorded, otherwise details are the same
 
-    when(carpark.isSeasonTicketValid(validSeasonTicketBarcode)).thenReturn(false);
+    Calendar aValidStartTime = Calendar.getInstance();
 
-    when(carpark.isSeasonTicketInUse(validSeasonTicketBarcode)).thenReturn(false);
+    aValidStartTime.set(2017,9,20,9,52,38);
 
-    sut.ticketInserted(barcodeForSeasonTicket);
+    validStartTime = aValidStartTime.getTimeInMillis();
+
+    Calendar aValidEndTime = Calendar.getInstance();
+
+    aValidEndTime.set(2017,9,28,11,43,12);
+
+    validEndTime = aValidEndTime.getTimeInMillis();
+
+    seasonTicket = new SeasonTicket("78", "Integral Carpark #12",
+            validStartTime, validEndTime);
+
+    sut.ticketInserted(idForSeasonTicket);
 
     assertTrue((REJECTED.equals(sut.getState())) &&
-            (WAITING.equals(sut.getPrevState()))); }
+            (WAITING.equals(sut.getPrevState())));
 
+  }
 
   @Test
-  void ticketInsertedCheckProcessingNotValidTicket() {
+  void ticketInsertedCheckNotValidTicket() {
 
     sut.ticketInserted("Invalid Ticket");
 
     assertTrue((REJECTED.equals(sut.getState())) &&
             (WAITING.equals(sut.getPrevState())));
 
-    verify(exitUserInterface).beep();
-
   }
 
   @Test
-  void ticketInsertedCheckProcessingNotWaitingState() {
+  void ticketInsertedCheckNotWaitingState() {
 
-    sut.ticketInserted(barcodeForSeasonTicket);
-
-    verify(exitUserInterface).beep();
+    sut.ticketInserted(idForSeasonTicket);
 
     assertFalse(WAITING.equals(sut.getPrevState()));
 
@@ -301,37 +312,33 @@ public class IntegExitControllerTest {
   @Test
   void ticketTakenProcessed() {
 
+    sut.setStateFromString(PROCESSED);
+
+    adhocTicket.exit(validEndTime);
+
+    sut.ticketInserted(barcodeForAdhocTicket);
+
     sut.ticketTaken();
 
-    assertTrue((TAKEN.equals(sut.getState())) &&
-            (PROCESSED.equals(sut.getPrevState())));
+    assertEquals(TAKEN,sut.getState());
 
   }
 
   @Test
   void ticketTakenRejected() {
 
-    sut.ticketTaken();
-
-    assertTrue((WAITING.equals(sut.getState())) &&
-            (REJECTED.equals(sut.getPrevState())));
-
-  }
-
-  @Test
-  void ticketTakenBeep() {
+    sut.setStateFromString(REJECTED);
 
     sut.ticketTaken();
 
-    verify(exitUserInterface).beep();
-
-    assertFalse((PROCESSED.equals(sut.getPrevState())) ||
-            (REJECTED.equals(sut.getPrevState())));
+    assertEquals(WAITING,sut.getPrevState());
 
   }
 
   @Test
   void carEventDetectedInsideSensorDetectsCarPresence() {
+
+    sut.setStateFromString(IDLE);
 
     sut.carEventDetected(insideSensor.getId(),true);
 
@@ -343,6 +350,8 @@ public class IntegExitControllerTest {
   @Test
   void carEventDetectedOutsideSensorDetectsCarPresence() {
 
+    sut.setStateFromString(IDLE);
+
     sut.carEventDetected(outsideSensor.getId(),true);
 
     assertTrue((BLOCKED.equals(sut.getState())) &&
@@ -353,7 +362,10 @@ public class IntegExitControllerTest {
   @Test
   void carEventDetectedInsideSensorDetectsCarAbsenceWhenWaitingFullIssuedOrValidated() {
 
-    // Note the spec for this event is incorrect - ExitController has no STATE for FULL, ISSUED, or VALIDATED
+    // Note the spec for this event is incorrect - ExitController has no STATE for
+    // FULL, ISSUED, or VALIDATED
+
+    sut.setStateFromString(WAITING);
 
     sut.carEventDetected(insideSensor.getId(),true);
 
@@ -364,7 +376,10 @@ public class IntegExitControllerTest {
   @Test
   void carEventDetectedOutsideSensorDetectsCarPresenceWhenWaitingFullIssuedOrValidated() {
 
-    // Note the spec for this event is incorrect - ExitController has no STATE for FULL, ISSUED, or VALIDATED
+    // Note the spec for this event is incorrect - ExitController has no STATE for
+    // FULL, ISSUED, or VALIDATED
+
+    sut.setStateFromString(WAITING);
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
@@ -374,6 +389,8 @@ public class IntegExitControllerTest {
 
   @Test
   void carEventDetectedInsideSensorDetectsCarAbsenceWhenBlocked() {
+
+    sut.setStateFromString(BLOCKED);
 
     sut.carEventDetected(insideSensor.getId(),true);
 
@@ -385,6 +402,8 @@ public class IntegExitControllerTest {
   @Test
   void carEventDetectedOutsideSensorDetectsCarAbsenceWhenBlocked() {
 
+    sut.setStateFromString(BLOCKED);
+
     sut.carEventDetected(outsideSensor.getId(), true);
 
     assertTrue(BLOCKED.equals(sut.getPrevState()));
@@ -392,6 +411,8 @@ public class IntegExitControllerTest {
 
   @Test
   void carEventDetectedInsideSensorDetectsCarAbsenceWhenTaken() {
+
+    sut.setStateFromString(TAKEN);
 
     sut.carEventDetected(insideSensor.getId(),true);
 
@@ -403,6 +424,8 @@ public class IntegExitControllerTest {
   @Test
   void carEventDetectedOutsideSensorDetectsCarPresenceWhenTaken() {
 
+    sut.setStateFromString(TAKEN);
+
     sut.carEventDetected(outsideSensor.getId(),true);
 
     assertTrue((EXITING.equals(sut.getState())) &&
@@ -412,6 +435,8 @@ public class IntegExitControllerTest {
 
   @Test
   void carEventDetectedInsideSensorDetectsCarAbsenceWhenExiting() {
+
+    sut.setStateFromString(EXITING);
 
     sut.carEventDetected(insideSensor.getId(),true);
 
@@ -423,6 +448,8 @@ public class IntegExitControllerTest {
   @Test
   void carEventDetectedOutsideSensorDetectsCarAbsenceWhenExiting() {
 
+    sut.setStateFromString(EXITING);
+
     sut.carEventDetected(outsideSensor.getId(),true);
 
     assertTrue((TAKEN.equals(sut.getState())) &&
@@ -431,7 +458,9 @@ public class IntegExitControllerTest {
   }
 
   @Test
-  void carEventDetectedInsideSensorDetectsCarAbsenceWhenExited() {
+  void carEventDetectedInsideSensorDetectsCarPresenceWhenExited() {
+
+    sut.setStateFromString(EXITED);
 
     sut.carEventDetected(insideSensor.getId(),true);
 
@@ -442,6 +471,8 @@ public class IntegExitControllerTest {
 
   @Test
   void carEventDetectedOutsideSensorDetectsCarAbsenceWhenExited() {
+
+    sut.setStateFromString(EXITED);
 
     sut.carEventDetected(outsideSensor.getId(),true);
 
